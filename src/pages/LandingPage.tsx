@@ -44,7 +44,7 @@ const LandingPage = () => {
       <div style={{ position: 'relative', zIndex: 10 }}>
         <LandingNavbar />
         <main>
-
+          <Hero />
         </main>
       </div>
     </div>

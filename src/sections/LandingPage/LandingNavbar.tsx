@@ -2,7 +2,7 @@ import React from 'react';
 
 const LandingNavbar = () => {
   return (
-    <div style={{ width: '100%', padding: '16px 24px' }}>
+    <div style={{ width: '100%', padding: '16px 24px 0 24px' }}>
       <nav
         style={{
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

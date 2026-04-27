@@ -324,7 +324,7 @@ const Hero = () => {
         }}
       />
 
-      {/* ── Warm orange glow (centre) ─────────── */}
+      {/* ── Blue center glow ─────────── */}
       <div
         style={{
           position: 'absolute',
@@ -333,7 +333,7 @@ const Hero = () => {
           transform: 'translate(-50%, -50%)',
           width: isSmall ? 300 : 680,
           height: isSmall ? 180 : 420,
-          background: 'radial-gradient(ellipse, rgba(232,98,42,0.10) 0%, rgba(232,98,42,0.03) 55%, transparent 80%)',
+          background: 'radial-gradient(ellipse, rgba(55,138,221,0.12) 0%, rgba(55,138,221,0.05) 55%, transparent 80%)',
           pointerEvents: 'none',
           zIndex: 0,
         }}
@@ -442,18 +442,19 @@ const Hero = () => {
           <span style={{ display: 'block' }}>
             Generate{' '}
             <AnimatedUnderline signed={signed} screen={screen}>
-              <em style={{ fontStyle: 'italic', color: '#1a1a1a' }}>
-                Aevora
+              <em style={{ fontStyle: 'italic' }}>
+                <span style={{ color: '#1a1a1a' }}>Ae</span>
+                <span style={{ color: '#e8622a' }}>vora</span>
               </em>
             </AnimatedUnderline>
             {' '}
-            <span style={{ color: '#185fa5' }}>Video Ads</span>
+            <span style={{ color: '#e8622a' }}>Video Ads</span>
           </span>
 
           {/* Line 2 — for Any Brand in minutes. */}
           <span style={{ display: 'block' }}>
             for{' '}
-            <span style={{ color: '#e8622a', fontStyle: 'italic' }}>
+            <span style={{ color: '#185fa5', fontStyle: 'italic' }}>
               Any Brand
             </span>
             {' '}
@@ -478,7 +479,7 @@ const Hero = () => {
             fontSize: SUBTITLE_SIZE[screen],
             lineHeight: 1.76,
             color: '#6b7280',
-            maxWidth: isSmall ? 330 : isMd ? 450 : 500,
+            maxWidth: isSmall ? 330 : isMd ? 450 : 580,
             margin: `0 auto ${isSmall ? 32 : 48}px`,
             letterSpacing: '0.005em',
           }}

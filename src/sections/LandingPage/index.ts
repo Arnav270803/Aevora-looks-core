@@ -5,3 +5,4 @@ export { default as FAQ } from './FAQ';
 export { default as WhatMakesAevoraDifferent } from './WhatMakesAevoraDifferent';
 export { default as SubscriptionExperience } from './SubscriptionExperience';
 export { default as Tutorial } from './Tutorial';
+export {default as ProductDemoAndSteps} from './ProductDemoAndSteps';

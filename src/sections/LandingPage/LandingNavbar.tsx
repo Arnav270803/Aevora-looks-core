@@ -2,21 +2,17 @@ import React from 'react';
 
 const LandingNavbar = () => {
   return (
-    <div style={{ width: '100%', padding: '16px 24px 0 24px' }}>
+    <div style={{ width: '100%' }}>
       <nav
         style={{
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-          background: '#f0f4ff',
-          borderRadius: '16px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
-          border: '1px solid rgba(0,0,0,0.06)',
-          padding: '0 32px',
-          height: '68px',
+          background: 'transparent',
+          padding: '0 40px',
+          height: '64px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          maxWidth: '1280px',
-          margin: '0 auto',
+          width: '100%',
         }}
       >
         {/* Left Side: Logo & Links */}
@@ -24,7 +20,7 @@ const LandingNavbar = () => {
           <a href="#" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
             <img src="/logo.svg" alt="Aevora Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
             <span style={{ 
-              fontSize: '20px', 
+              fontSize: '17px', 
               fontWeight: 700, 
               color: '#1a1a1a', 
               letterSpacing: '-0.5px',
@@ -40,12 +36,12 @@ const LandingNavbar = () => {
                 key={link}
                 href="#"
                 style={{
-                  fontSize: '15px',
+                  fontSize: '13px',
                   fontWeight: 500,
                   color: '#374151',
                   textDecoration: 'none',
                   transition: 'color 0.2s ease',
-                  letterSpacing: '-0.2px',
+                  letterSpacing: '-0.1px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
@@ -73,15 +69,15 @@ const LandingNavbar = () => {
           <button
             style={{
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-              fontSize: '15px',
+              fontSize: '13px',
               fontWeight: 500,
               color: '#374151',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              padding: '10px 16px',
+              padding: '8px 14px',
               transition: 'color 0.2s ease',
-              letterSpacing: '-0.2px',
+              letterSpacing: '-0.1px',
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.color = '#111827';
@@ -96,16 +92,16 @@ const LandingNavbar = () => {
           <button
             style={{
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-              fontSize: '15px',
+              fontSize: '13px',
               fontWeight: 600,
               color: '#374151',
               background: '#f3f4f6',
               border: '1px solid #e5e7eb',
               cursor: 'pointer',
-              padding: '11px 22px',
-              borderRadius: '10px',
+              padding: '9px 18px',
+              borderRadius: '8px',
               transition: 'background 0.2s ease, border-color 0.2s ease',
-              letterSpacing: '-0.2px',
+              letterSpacing: '-0.1px',
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.background = '#e5e7eb';
@@ -122,20 +118,20 @@ const LandingNavbar = () => {
           <button
             style={{
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-              fontSize: '15px',
+              fontSize: '13px',
               fontWeight: 600,
               color: '#fff',
               background: 'linear-gradient(135deg, #FF6B35 0%, #E85A20 100%)',
               border: 'none',
               cursor: 'pointer',
-              padding: '11px 22px',
-              borderRadius: '10px',
+              padding: '9px 18px',
+              borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
-              gap: '7px',
+              gap: '6px',
               boxShadow: '0 2px 8px rgba(232,90,32,0.25)',
               transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              letterSpacing: '-0.2px',
+              letterSpacing: '-0.1px',
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';

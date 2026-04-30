@@ -196,33 +196,7 @@ function BrandMark({ visible }: { visible: boolean }) {
         marginBottom: 42,
       }}
     >
-      {/* Wordmark */}
-      <span
-        style={{
-          fontFamily: "'Cormorant Garamond', 'Georgia', 'Times New Roman', serif",
-          fontStyle: 'italic',
-          fontWeight: 400,
-          fontSize: 17,
-          letterSpacing: '0.16em',
-          color: '#111',
-          textTransform: 'uppercase',
-        }}
-      >
-        Aevora
-      </span>
-
-      {/* Orange separator dot */}
-      <span
-        style={{
-          display: 'inline-block',
-          width: 3,
-          height: 3,
-          borderRadius: '50%',
-          background: '#e8622a',
-        }}
-      />
-
-      {/* Status pill — now blue themed */}
+      {/* Status pill */}
       <span
         style={{
           display: 'inline-flex',
@@ -301,28 +275,17 @@ const Hero = () => {
         justifyContent: 'center',
         textAlign: 'center',
         padding: isSmall
-          ? '8px 22px 48px'
+          ? '8px 22px 16px'
           : isMd
-          ? '12px 32px 56px'
+          ? '12px 32px 20px'
           : screen === 'lg'
-          ? '16px 48px 72px'
-          : '20px 56px 88px',
-        overflow: 'hidden',
+          ? '16px 48px 24px'
+          : '20px 56px 28px',
         minHeight: isSmall ? 'auto' : '100vh',
         background: 'transparent',
       }}
     >
-      {/* ── Blue top accent bar ───────────────── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0,
-          height: 3,
-          background: 'linear-gradient(90deg, transparent 0%, rgba(24,95,165,0) 20%, rgba(55,138,221,0.45) 50%, rgba(24,95,165,0) 80%, transparent 100%)',
-          pointerEvents: 'none',
-          zIndex: 3,
-        }}
-      />
+
 
       {/* ── Blue center glow ─────────── */}
       <div
@@ -397,18 +360,7 @@ const Hero = () => {
       {/* ── Noise grain ──────────────────────── */}
       <NoiseOverlay />
 
-      {/* ── Top rule ─────────────────────────── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 1,
-          background: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.07) 30%, rgba(0,0,0,0.07) 70%, transparent 100%)',
-          zIndex: 2,
-        }}
-      />
+
 
       {/* ── Main content ─────────────────────── */}
       <div
@@ -496,31 +448,44 @@ const Hero = () => {
             justifyContent: 'center',
           }}
         >
-          <button
-            onMouseEnter={() => setPrimaryHover(true)}
-            onMouseLeave={() => setPrimaryHover(false)}
-            style={{
-              fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
-              fontWeight: 500,
-              fontSize: isSmall ? 13.5 : 14,
-              letterSpacing: '0.01em',
-              color: '#fff',
-              background: primaryHover ? '#d4521e' : '#e8622a',
-              border: 'none',
-              borderRadius: 9,
-              padding: isSmall ? '13px 30px' : '14px 36px',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              width: isSmall ? '100%' : 'auto',
-              boxShadow: primaryHover
-                ? '0 6px 26px rgba(232,98,42,0.42), 0 2px 6px rgba(0,0,0,0.10)'
-                : '0 3px 16px rgba(232,98,42,0.30), 0 1px 3px rgba(0,0,0,0.08)',
-              transform: primaryHover ? 'translateY(-1px)' : 'translateY(0)',
-              transition: 'background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
-            }}
-          >
-            Start for free
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <button
+              onMouseEnter={() => setPrimaryHover(true)}
+              onMouseLeave={() => setPrimaryHover(false)}
+              style={{
+                fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
+                fontWeight: 500,
+                fontSize: isSmall ? 13.5 : 14,
+                letterSpacing: '0.01em',
+                color: '#fff',
+                background: primaryHover ? '#d4521e' : '#e8622a',
+                border: 'none',
+                borderRadius: 9,
+                padding: isSmall ? '13px 30px' : '14px 36px',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                width: isSmall ? '100%' : 'auto',
+                boxShadow: primaryHover
+                  ? '0 6px 26px rgba(232,98,42,0.42), 0 2px 6px rgba(0,0,0,0.10)'
+                  : '0 3px 16px rgba(232,98,42,0.30), 0 1px 3px rgba(0,0,0,0.08)',
+                transform: primaryHover ? 'translateY(-1px)' : 'translateY(0)',
+                transition: 'background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
+              }}
+            >
+              Start for free
+            </button>
+            <span
+              style={{
+                fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
+                fontSize: 12,
+                fontWeight: 400,
+                color: '#9ca3af',
+                letterSpacing: '0.01em',
+              }}
+            >
+              No credit card required
+            </span>
+          </div>
         </div>
       </div>
 

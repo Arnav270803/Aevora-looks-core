@@ -6,7 +6,8 @@ import {
   WhatMakesAevoraDifferent,
   SubscriptionExperience,
   Tutorial,
-  Footer
+  Footer,
+  ProductDemoAndSteps
 } from '../sections/LandingPage';
 
 const LandingPage = () => {
@@ -45,6 +46,7 @@ const LandingPage = () => {
         <LandingNavbar />
         <main>
           <Hero />
+          <ProductDemoAndSteps />
         </main>
       </div>
     </div>

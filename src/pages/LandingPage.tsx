@@ -42,12 +42,16 @@ const LandingPage = () => {
       />
       
       {/* Content */}
-      <div style={{ position: 'relative', zIndex: 10 }}>
+      <div style={{ position: 'relative', zIndex: 10, paddingTop: '64px' }}>
         <LandingNavbar />
         <main>
           <Hero />
           <ProductDemoAndSteps />
+          <WhatMakesAevoraDifferent />
+          <SubscriptionExperience />
+          <FAQ />
         </main>
+        <Footer />
       </div>
     </div>
   );

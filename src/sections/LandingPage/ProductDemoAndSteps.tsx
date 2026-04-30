@@ -8,15 +8,60 @@ const ProductDemoAndSteps = () => {
 
   return (
     <section
+      id="demo"
       style={{
         width: '100%',
-        padding: '0px 40px 80px',
+        padding: '0px 40px 100px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         background: 'transparent',
       }}
     >
+      {/* Section header */}
+      <div style={{ textAlign: 'center', marginBottom: 48 }}>
+        <span
+          style={{
+            display: 'inline-block',
+            fontSize: '11px',
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase' as const,
+            color: '#e8622a',
+            fontFamily: "'Inter', -apple-system, sans-serif",
+            marginBottom: 14,
+          }}
+        >
+          Product Demo
+        </span>
+        <h2
+          style={{
+            fontFamily: "'Cormorant Garamond', 'Georgia', 'Times New Roman', serif",
+            fontSize: 'clamp(28px, 4vw, 44px)',
+            fontWeight: 400,
+            lineHeight: 1.15,
+            letterSpacing: '-0.02em',
+            color: '#0d0d0d',
+            margin: '0 0 14px',
+          }}
+        >
+          See Aevora in action
+        </h2>
+        <p
+          style={{
+            fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
+            fontSize: '15.5px',
+            fontWeight: 300,
+            color: '#4b5563',
+            lineHeight: 1.65,
+            maxWidth: 480,
+            margin: '0 auto',
+          }}
+        >
+          Upload a product image, pick a style — your video ad is ready in seconds.
+        </p>
+      </div>
+
       {/* Outer card — gradient background */}
       <div
         style={{
@@ -61,7 +106,7 @@ const ProductDemoAndSteps = () => {
                     fontSize: 12,
                     fontWeight: isActive ? 600 : 500,
                     letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     color: isActive ? '#2d4fc4' : 'rgba(255,255,255,0.85)',
                     background: isActive ? '#fff' : 'transparent',
                     border: isActive ? '1.5px solid rgba(45,79,196,0.25)' : '1.5px solid transparent',
@@ -69,7 +114,7 @@ const ProductDemoAndSteps = () => {
                     padding: '8px 22px',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
-                    whiteSpace: 'nowrap',
+                    whiteSpace: 'nowrap' as const,
                   }}
                 >
                   {tab}
@@ -132,14 +177,54 @@ const ProductDemoAndSteps = () => {
               width: '100%',
               aspectRatio: '16 / 9',
               borderRadius: 12,
-              border: '2px solid rgba(99,149,230,0.35)',
+              border: '2px solid rgba(99,149,230,0.25)',
               background: 'linear-gradient(135deg, #eef4ff 0%, #e8f0fe 100%)',
               display: 'flex',
+              flexDirection: 'column' as const,
               alignItems: 'center',
               justifyContent: 'center',
+              gap: 16,
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            {/* intentionally empty — content to be added later */}
+            {/* Subtle grid lines */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'linear-gradient(rgba(99,149,230,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(99,149,230,0.07) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }} />
+            {/* Play indicator */}
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                background: 'rgba(45,79,196,0.10)',
+                border: '2px solid rgba(45,79,196,0.20)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                zIndex: 1,
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <polygon points="9 7 19 12 9 17" fill="rgba(45,79,196,0.6)" />
+              </svg>
+            </div>
+            <p style={{
+              fontFamily: "'Inter', -apple-system, sans-serif",
+              fontSize: '13px',
+              fontWeight: 500,
+              color: 'rgba(45,79,196,0.5)',
+              margin: 0,
+              position: 'relative',
+              zIndex: 1,
+            }}>
+              {activeTab} demo coming soon
+            </p>
           </div>
         </div>
       </div>

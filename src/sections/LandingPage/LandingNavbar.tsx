@@ -1,17 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const LandingNavbar = () => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <div style={{ width: '100%' }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        transition: 'background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease',
+        background: scrolled ? 'rgba(248,250,255,0.92)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+        borderBottom: `1px solid ${scrolled ? 'rgba(0,0,0,0.07)' : 'transparent'}`,
+        boxShadow: scrolled ? '0 2px 24px rgba(0,0,0,0.05)' : 'none',
+      }}
+    >
       <nav
         style={{
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-          background: 'transparent',
           padding: '0 40px',
           height: '64px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          maxWidth: 1280,
+          margin: '0 auto',
           width: '100%',
         }}
       >

@@ -430,7 +430,7 @@ const Hero = () => {
             fontWeight: 300,
             fontSize: SUBTITLE_SIZE[screen],
             lineHeight: 1.76,
-            color: '#6b7280',
+            color: '#4b5563',
             maxWidth: isSmall ? 330 : isMd ? 450 : 580,
             margin: `0 auto ${isSmall ? 32 : 48}px`,
             letterSpacing: '0.005em',
@@ -449,31 +449,63 @@ const Hero = () => {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <button
-              onMouseEnter={() => setPrimaryHover(true)}
-              onMouseLeave={() => setPrimaryHover(false)}
-              style={{
-                fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
-                fontWeight: 500,
-                fontSize: isSmall ? 13.5 : 14,
-                letterSpacing: '0.01em',
-                color: '#fff',
-                background: primaryHover ? '#d4521e' : '#e8622a',
-                border: 'none',
-                borderRadius: 9,
-                padding: isSmall ? '13px 30px' : '14px 36px',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                width: isSmall ? '100%' : 'auto',
-                boxShadow: primaryHover
-                  ? '0 6px 26px rgba(232,98,42,0.42), 0 2px 6px rgba(0,0,0,0.10)'
-                  : '0 3px 16px rgba(232,98,42,0.30), 0 1px 3px rgba(0,0,0,0.08)',
-                transform: primaryHover ? 'translateY(-1px)' : 'translateY(0)',
-                transition: 'background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
-              }}
-            >
-              Start for free
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isSmall ? 10 : 14, flexWrap: 'wrap' as const, justifyContent: 'center' }}>
+              <button
+                onMouseEnter={() => setPrimaryHover(true)}
+                onMouseLeave={() => setPrimaryHover(false)}
+                style={{
+                  fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
+                  fontWeight: 500,
+                  fontSize: isSmall ? 13.5 : 14,
+                  letterSpacing: '0.01em',
+                  color: '#fff',
+                  background: primaryHover ? '#d4521e' : '#e8622a',
+                  border: 'none',
+                  borderRadius: 9,
+                  padding: isSmall ? '13px 30px' : '14px 36px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap' as const,
+                  width: isSmall ? '100%' : 'auto',
+                  boxShadow: primaryHover
+                    ? '0 6px 26px rgba(232,98,42,0.42), 0 2px 6px rgba(0,0,0,0.10)'
+                    : '0 3px 16px rgba(232,98,42,0.30), 0 1px 3px rgba(0,0,0,0.08)',
+                  transform: primaryHover ? 'translateY(-1px)' : 'translateY(0)',
+                  transition: 'background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
+                }}
+              >
+                Start for free
+              </button>
+              {!isSmall && (
+                <a
+                  href="#demo"
+                  style={{
+                    fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
+                    fontWeight: 500,
+                    fontSize: 14,
+                    letterSpacing: '0.01em',
+                    color: '#374151',
+                    background: 'rgba(255,255,255,0.7)',
+                    border: '1.5px solid rgba(0,0,0,0.10)',
+                    borderRadius: 9,
+                    padding: '13px 28px',
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 7,
+                    whiteSpace: 'nowrap' as const,
+                    backdropFilter: 'blur(8px)',
+                    transition: 'border-color 0.18s ease, background 0.18s ease',
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+                  </svg>
+                  Watch Demo
+                </a>
+              )}
+            </div>
             <span
               style={{
                 fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
@@ -486,6 +518,59 @@ const Hero = () => {
               No credit card required
             </span>
           </div>
+        </div>
+
+        {/* ── Social Proof Stats ─────────────── */}
+        <div
+          style={{
+            ...fade(0.44),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: isSmall ? 20 : 36,
+            marginTop: isSmall ? 40 : 56,
+            paddingTop: isSmall ? 28 : 36,
+            borderTop: '1px solid rgba(0,0,0,0.07)',
+          }}
+        >
+          {[
+            { value: '500+', label: 'Brands' },
+            { value: '10k+', label: 'Videos Created' },
+            { value: '90%', label: 'Cost Saved' },
+          ].map((stat, i) => (
+            <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: isSmall ? 20 : 36 }}>
+              {i > 0 && (
+                <div style={{ width: 1, height: 28, background: 'rgba(0,0,0,0.10)', flexShrink: 0 }} />
+              )}
+              <div style={{ textAlign: 'center' as const }}>
+                <div
+                  style={{
+                    fontFamily: "'Inter', -apple-system, sans-serif",
+                    fontSize: isSmall ? '18px' : '22px',
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                    letterSpacing: '-0.03em',
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {stat.value}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
+                    fontSize: '10.5px',
+                    fontWeight: 500,
+                    color: '#9ca3af',
+                    letterSpacing: '0.07em',
+                    textTransform: 'uppercase' as const,
+                    marginTop: 3,
+                  }}
+                >
+                  {stat.label}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

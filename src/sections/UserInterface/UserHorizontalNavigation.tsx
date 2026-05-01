@@ -15,8 +15,8 @@ const NavItem = ({
       fontSize: 13.5, fontWeight: isActive ? 600 : 400,
       textAlign: 'left', marginBottom: 2, transition: 'all 0.15s', fontFamily: 'inherit',
     }}
-    onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLButtonElement).style.background = '#f9fafb'; (e.currentTarget as HTMLButtonElement).style.color = '#374151'; } }}
-    onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#6b7280'; } }}
+    onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLButtonElement).style.color = '#185fa5'; } }}
+    onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLButtonElement).style.color = '#6b7280'; } }}
   >
     {icon}
     {label}
@@ -66,29 +66,25 @@ const UserHorizontalNavigation = () => {
       </div>
 
       {/* Bottom */}
-      <div style={{ padding: '12px 12px 20px', borderTop: '1px solid #f3f4f6' }}>
-        <div style={{ background: '#f9fafb', borderRadius: 10, padding: '10px 12px', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>Pro Plan</span>
-            <span style={{ fontSize: 10.5, fontWeight: 600, color: '#e8622a', background: '#fff7f4', border: '1px solid #fcd0b8', borderRadius: 4, padding: '1px 7px', cursor: 'pointer' }}>
+      <div className="px-3 pb-5 pt-3 border-t border-gray-100">
+        <div className="bg-gray-50 rounded-xl p-3 mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-semibold text-gray-700">Pro Plan</span>
+            <span className="text-[10.5px] font-semibold text-orange-500 bg-orange-50 border border-orange-200 rounded px-2 py-0.5 cursor-pointer">
               Upgrade
             </span>
           </div>
-          <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 6 }}>23 / 100 videos this month</div>
-          <div style={{ background: '#e5e7eb', borderRadius: 999, height: 4 }}>
-            <div style={{ background: '#e8622a', borderRadius: 999, height: 4, width: '23%' }} />
+          <div className="text-[11px] text-gray-400 mb-2">1/3 videos this month is done</div>
+          <div className="bg-gray-200 rounded-full h-1">
+            <div className="bg-orange-500 rounded-full h-1 w-1/3" />
           </div>
         </div>
-        <button style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-          padding: '8px 4px', border: 'none', background: 'transparent',
-          color: '#6b7280', borderRadius: 8, cursor: 'pointer', fontSize: 13.5, fontFamily: 'inherit',
-        }}>
+        <button className="w-full flex items-center gap-2.5 px-1 py-2 border-none bg-transparent text-gray-400 rounded-lg cursor-pointer text-[13.5px] hover:text-blue-700 transition-colors" style={{ fontFamily: 'inherit' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
           Help & Support
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-auto">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
         </button>

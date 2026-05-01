@@ -14,7 +14,12 @@ const UserInterface = () => {
       <UserHorizontalNavigation />
 
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f7f8fa', overflowY: 'auto' }}>
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto',
+        background: '#ffffff',
+        backgroundImage: 'radial-gradient(circle, rgba(99,102,241,0.35) 1.5px, transparent 1.5px)',
+        backgroundSize: '20px 20px',
+      }}>
         <UIHeroNavbar />
         <main style={{ flex: 1 }}>
           <ToolsAvailable />

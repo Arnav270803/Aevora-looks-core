@@ -47,7 +47,7 @@ const LandingNavbar = () => {
                   gap: '4px',
                 }}
                 onMouseEnter={(e) => {
-                  (e.target as HTMLAnchorElement).style.color = '#111827';
+                  (e.target as HTMLAnchorElement).style.color = '#185fa5';
                 }}
                 onMouseLeave={(e) => {
                   (e.target as HTMLAnchorElement).style.color = '#374151';
@@ -80,7 +80,7 @@ const LandingNavbar = () => {
               letterSpacing: '-0.1px',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = '#111827';
+              (e.currentTarget as HTMLButtonElement).style.color = '#185fa5';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.color = '#374151';
@@ -104,12 +104,14 @@ const LandingNavbar = () => {
               letterSpacing: '-0.1px',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#e5e7eb';
-              (e.currentTarget as HTMLButtonElement).style.borderColor = '#d1d5db';
+              (e.currentTarget as HTMLButtonElement).style.background = '#eff6ff';
+              (e.currentTarget as HTMLButtonElement).style.borderColor = '#93c5fd';
+              (e.currentTarget as HTMLButtonElement).style.color = '#185fa5';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.background = '#f3f4f6';
               (e.currentTarget as HTMLButtonElement).style.borderColor = '#e5e7eb';
+              (e.currentTarget as HTMLButtonElement).style.color = '#374151';
             }}
           >
             Book Demo

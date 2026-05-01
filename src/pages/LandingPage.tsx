@@ -21,11 +21,10 @@ const LandingPage = () => {
           pointerEvents: 'none',
           opacity: 0.85,
           backgroundImage: `
-            radial-gradient(circle, rgba(99, 102, 241, 0.55) 1px, transparent 1px),
-            radial-gradient(circle, rgba(139, 92, 246, 0.3) 0.6px, transparent 0.6px)
+            radial-gradient(circle, rgba(99, 102, 241, 0.55) 1px, transparent 1px)
           `,
-          backgroundSize: '18px 18px, 9px 9px',
-          backgroundPosition: '0 0, 4.5px 4.5px',
+          backgroundSize: '18px 18px',
+          backgroundPosition: '0 0',
           zIndex: 0
         }}
       />

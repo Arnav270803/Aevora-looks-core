@@ -10,7 +10,7 @@ const ProductDemoAndSteps = () => {
     <section
       style={{
         width: '100%',
-        padding: '0px 40px 80px',
+        padding: '0px 40px 40px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -126,20 +126,25 @@ const ProductDemoAndSteps = () => {
             boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
           }}
         >
-          {/* Video / image placeholder frame */}
+          {/* Video / image frame */}
           <div
             style={{
               width: '100%',
               aspectRatio: '16 / 9',
               borderRadius: 12,
+              overflow: 'hidden',
               border: '2px solid rgba(99,149,230,0.35)',
-              background: 'linear-gradient(135deg, #eef4ff 0%, #e8f0fe 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              background: '#000',
             }}
           >
-            {/* intentionally empty — content to be added later */}
+            <video
+              src="/DRINK COMMERCIAL - Daniel Schiffer style.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
           </div>
         </div>
       </div>

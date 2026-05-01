@@ -301,13 +301,12 @@ const Hero = () => {
         justifyContent: 'center',
         textAlign: 'center',
         padding: isSmall
-          ? '4px 22px 16px'
+          ? '24px 22px 32px'
           : isMd
-          ? '4px 32px 20px'
+          ? '28px 32px 36px'
           : screen === 'lg'
-          ? '4px 48px 24px'
-          : '4px 56px 28px',
-        minHeight: isSmall ? 'auto' : '100vh',
+          ? '36px 48px 44px'
+          : '40px 56px 48px',
         background: 'transparent',
       }}
     >

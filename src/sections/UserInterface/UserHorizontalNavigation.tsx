@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const NavItem = ({
   label, icon, isActive, onClick,
 }: {
-  label: string; icon: JSX.Element; isActive: boolean; onClick: () => void;
+  label: string; icon: React.ReactElement; isActive: boolean; onClick: () => void;
 }) => (
   <button
     onClick={onClick}
@@ -31,7 +31,7 @@ const SectionLabel = ({ children }: { children: string }) => (
 
 const UserHorizontalNavigation = () => {
   const [active, setActive] = useState('Home');
-  const nav = (label: string, icon: JSX.Element) => (
+  const nav = (label: string, icon: React.ReactElement) => (
     <NavItem key={label} label={label} icon={icon} isActive={active === label} onClick={() => setActive(label)} />
   );
 

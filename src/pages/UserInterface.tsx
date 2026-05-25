@@ -4,7 +4,6 @@ import {
   UIHeroNavbar,
   ToolsAvailable,
   AdCreationSection,
-  UIFooter,
 } from '../sections/UserInterface';
 
 const UserInterface = () => {
@@ -24,7 +23,6 @@ const UserInterface = () => {
         <main style={{ flex: 1 }}>
           <ToolsAvailable />
           <AdCreationSection />
-          <UIFooter />
         </main>
       </div>
     </div>

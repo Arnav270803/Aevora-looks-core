@@ -13,7 +13,7 @@ const AdCreationSection = () => {
   const [goal, setGoal] = useState('Conversions');
   const [adLength, setAdLength] = useState('15 Seconds');
   const [audience, setAudience] = useState('');
-  const [productUrl, setProductUrl] = useState('');
+
 
   const selectStyle: React.CSSProperties = {
     width: '100%', padding: '9px 32px 9px 10px', borderRadius: 8,
@@ -31,33 +31,8 @@ const AdCreationSection = () => {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
 
         {/* ── Col 1: Create a new ad ── */}
-        <div style={{ background: '#fff', borderRadius: 14, padding: '20px', border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#fefefe', borderRadius: 14, padding: '20px', border: '1px solid rgba(99,102,241,0.25)', boxShadow: '0 8px 28px rgba(99,102,241,0.22), 0 2px 8px rgba(99,102,241,0.14)' }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 18px' }}>Create a new ad</h3>
-
-          <label style={labelStyle}>Product Link</label>
-          <div style={{ position: 'relative', marginBottom: 14 }}>
-            <input
-              value={productUrl}
-              onChange={e => setProductUrl(e.target.value)}
-              placeholder="Paste your product URL (Amazon, Shopify, any store)"
-              style={{
-                width: '100%', padding: '9px 36px 9px 10px', borderRadius: 8,
-                border: '1px solid #e5e7eb', fontSize: 12.5, color: '#374151',
-                background: '#fafafa', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit',
-              }}
-            />
-            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-              </svg>
-            </span>
-          </div>
-
-          <div style={{ textAlign: 'center', fontSize: 12, color: '#9ca3af', margin: '4px 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ flex: 1, height: 1, background: '#f0f0f0' }} />
-            or
-            <div style={{ flex: 1, height: 1, background: '#f0f0f0' }} />
-          </div>
 
           <label style={labelStyle}>Upload Product Images</label>
           <div style={{
@@ -82,7 +57,7 @@ const AdCreationSection = () => {
         </div>
 
         {/* ── Col 2: Ad Settings ── */}
-        <div style={{ background: '#fff', borderRadius: 14, padding: '20px', border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#fefefe', borderRadius: 14, padding: '20px', border: '1px solid rgba(99,102,241,0.25)', boxShadow: '0 8px 28px rgba(99,102,241,0.22), 0 2px 8px rgba(99,102,241,0.14)' }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 18px' }}>Ad Settings</h3>
 
           <label style={labelStyle}>Platform</label>
@@ -156,7 +131,7 @@ const AdCreationSection = () => {
         </div>
 
         {/* ── Col 3: Preview ── */}
-        <div style={{ background: '#fff', borderRadius: 14, padding: '20px', border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#fefefe', borderRadius: 14, padding: '20px', border: '1px solid rgba(99,102,241,0.25)', boxShadow: '0 8px 28px rgba(99,102,241,0.22), 0 2px 8px rgba(99,102,241,0.14)' }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>Preview</h3>
           <div style={{
             borderRadius: 12, overflow: 'hidden', background: '#f8fafc',

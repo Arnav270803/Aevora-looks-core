@@ -1,160 +1,165 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { CSSProperties, ReactElement } from 'react';
+import { WORKFLOW_STEPS, type WorkflowStepId } from './workflow';
 
-const steps = [
-  {
-    num: '01',
-    title: 'Product to Ad',
-    desc: 'Paste a product URL or upload images — Aevora pulls everything it needs automatically.',
-    color: '#3b82f6',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-      </svg>
-    ),
-  },
-  {
-    num: '02',
-    title: 'AI Script & Hooks',
-    desc: 'Our AI writes platform-native scripts with attention-grabbing hooks for your target audience.',
-    color: '#7c3aed',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2l2 6h6l-5 3.5 2 6L12 14l-5 3.5 2-6L4 8h6z"/>
-      </svg>
-    ),
-  },
-  {
-    num: '03',
-    title: 'Choose Style',
-    desc: 'Select a visual style, voiceover tone, and ad format that matches your brand identity.',
-    color: '#059669',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-      </svg>
-    ),
-  },
-  {
-    num: '04',
-    title: 'Generate & Export',
-    desc: 'Get multiple ad variations ready to publish directly to TikTok, Meta, or YouTube.',
-    color: '#e8622a',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-    ),
-  },
-];
+type ToolsAvailableProps = {
+  activeStep: WorkflowStepId;
+  onStepChange: (step: WorkflowStepId) => void;
+};
 
-const ToolsAvailable = () => {
-  const [hovered, setHovered] = useState<number | null>(null);
+const iconMap: Record<WorkflowStepId, ReactElement> = {
+  'prompt-reference': (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <circle cx="8.5" cy="10" r="1.5" />
+      <path d="M21 15l-4.5-4.5L9 18" />
+    </svg>
+  ),
+  'cinematic-shots': (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16v16H4z" />
+      <path d="M8 4v16M16 4v16M4 9h16M4 15h16" />
+    </svg>
+  ),
+  'script-writing': (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6M8 13h8M8 17h6" />
+    </svg>
+  ),
+  'scene-generation': (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="7" height="7" rx="1" />
+      <rect x="14" y="4" width="7" height="7" rx="1" />
+      <rect x="3" y="15" width="7" height="5" rx="1" />
+      <rect x="14" y="15" width="7" height="5" rx="1" />
+    </svg>
+  ),
+  'final-video': (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12l-7 4V8l7 4z" />
+      <rect x="2" y="6" width="13" height="12" rx="2" />
+    </svg>
+  ),
+};
+
+const getStatus = (index: number, activeIndex: number) => {
+  if (index === activeIndex) return 'Current';
+  if (index < activeIndex) return 'Done';
+  if (index === activeIndex + 1) return 'Next';
+  return 'Pending';
+};
+
+const ToolsAvailable = ({ activeStep, onStepChange }: ToolsAvailableProps) => {
+  const [hovered, setHovered] = useState<WorkflowStepId | null>(null);
+  const activeIndex = WORKFLOW_STEPS.findIndex((step) => step.id === activeStep);
+
+  const summaryGrid: CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(5, minmax(150px, 1fr))',
+    gap: 12,
+  };
 
   return (
-    <div style={{ padding: '32px 32px 20px', fontFamily: "'Inter', -apple-system, sans-serif" }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 24 }}>
+    <div style={{ padding: '32px 32px 18px', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22, gap: 24 }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <span style={{
-              fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: '#e8622a', background: '#fff4ef', padding: '3px 8px', borderRadius: 4,
-            }}>Workflow</span>
-          </div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0, letterSpacing: '-0.4px', lineHeight: 1.2 }}>
-            Let's create your next{' '}
-            <span style={{ color: '#e8622a' }}>winning ad.</span>
+          <span style={{
+            fontSize: 10.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: '#e8622a', background: '#fff4ef', padding: '4px 9px', borderRadius: 5,
+            display: 'inline-flex', marginBottom: 8,
+          }}>
+            Workflow
+          </span>
+          <h1 style={{ fontSize: 23, fontWeight: 750, color: '#0f172a', margin: 0, letterSpacing: '-0.2px', lineHeight: 1.2 }}>
+            Build an ad from product to final video
           </h1>
         </div>
-        <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, maxWidth: 260, textAlign: 'right', lineHeight: 1.5 }}>
-          From product to published — in minutes.
+        <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, maxWidth: 270, textAlign: 'right', lineHeight: 1.5 }}>
+          The cards below summarize your pipeline. Open a step to edit its details.
         </p>
       </div>
 
-      {/* Step cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, position: 'relative' }}>
-        {steps.map((step, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'stretch', position: 'relative' }}>
-            {/* Card */}
-            <div
-              onMouseEnter={() => setHovered(i)}
+      <div style={summaryGrid}>
+        {WORKFLOW_STEPS.map((step, index) => {
+          const isActive = step.id === activeStep;
+          const isHovered = hovered === step.id;
+          const status = getStatus(index, activeIndex);
+          const statusColor = status === 'Current' ? step.accent : status === 'Done' ? '#059669' : '#94a3b8';
+
+          return (
+            <button
+              key={step.id}
+              type="button"
+              onClick={() => onStepChange(step.id)}
+              onMouseEnter={() => setHovered(step.id)}
               onMouseLeave={() => setHovered(null)}
               style={{
-                flex: 1,
-                background: hovered === i ? '#ffffff' : '#fefefe',
-                border: `1px solid ${hovered === i ? step.color + '40' : '#ede9e0'}`,
+                textAlign: 'left',
+                border: `1px solid ${isActive ? step.accent : isHovered ? step.accent + '55' : '#e8eaf3'}`,
+                background: isActive ? '#fffaf7' : '#ffffff',
                 borderRadius: 10,
-                padding: '18px 20px 20px',
+                padding: '15px 16px',
+                minHeight: 142,
                 cursor: 'pointer',
-                transition: 'all 0.18s ease',
-                boxShadow: hovered === i
-                  ? `0 8px 28px rgba(99,102,241,0.22), 0 2px 8px rgba(99,102,241,0.14)`
-                  : '0 4px 14px rgba(99,102,241,0.14), 0 1px 3px rgba(99,102,241,0.08)',
+                fontFamily: 'inherit',
+                boxShadow: isActive
+                  ? '0 12px 30px rgba(232,98,42,0.16), 0 2px 8px rgba(15,23,42,0.06)'
+                  : isHovered
+                    ? '0 10px 24px rgba(99,102,241,0.16), 0 2px 8px rgba(15,23,42,0.05)'
+                    : '0 4px 14px rgba(99,102,241,0.08)',
+                transition: 'border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
+                transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
             >
-              {/* Top accent line on hover */}
               <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-                background: step.color,
-                borderRadius: '10px 10px 0 0',
-                opacity: hovered === i ? 1 : 0,
-                transition: 'opacity 0.18s ease',
+                position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+                background: isActive ? step.accent : 'transparent',
               }} />
 
-              {/* Step number + icon row */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, color: '#cbd5e1',
-                  letterSpacing: '0.06em', fontVariantNumeric: 'tabular-nums',
-                }}>
-                  STEP {step.num}
-                </span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 16 }}>
+                <div>
+                  <div style={{ fontSize: 10.5, color: '#a9b4c5', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 6 }}>
+                    STEP {step.num}
+                  </div>
+                  <span style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    color: statusColor,
+                    background: status === 'Current' ? step.accent + '12' : status === 'Done' ? '#ecfdf5' : '#f8fafc',
+                    border: `1px solid ${status === 'Current' ? step.accent + '30' : status === 'Done' ? '#bbf7d0' : '#e2e8f0'}`,
+                    borderRadius: 999,
+                    padding: '3px 8px',
+                  }}>
+                    {status}
+                  </span>
+                </div>
                 <div style={{
-                  width: 32, height: 32, borderRadius: 8,
-                  background: hovered === i ? step.color + '15' : '#f8fafc',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: hovered === i ? step.color : '#94a3b8',
-                  transition: 'all 0.18s ease',
+                  width: 34,
+                  height: 34,
+                  borderRadius: 9,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: isActive ? step.accent : '#94a3b8',
+                  background: isActive ? step.accent + '12' : '#f8fafc',
+                  flexShrink: 0,
                 }}>
-                  {step.icon}
+                  {iconMap[step.id]}
                 </div>
               </div>
 
-              {/* Title */}
-              <div style={{
-                fontSize: 13.5, fontWeight: 600,
-                color: hovered === i ? '#0f172a' : '#1e293b',
-                marginBottom: 6, letterSpacing: '-0.1px',
-                transition: 'color 0.18s',
-              }}>
+              <div style={{ fontSize: 13.5, fontWeight: 750, color: '#0f172a', lineHeight: 1.25, marginBottom: 8 }}>
                 {step.title}
               </div>
-
-              {/* Description */}
-              <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6, fontWeight: 400 }}>
-                {step.desc}
+              <div style={{ fontSize: 12, color: '#8794aa', lineHeight: 1.5 }}>
+                {step.summary}
               </div>
-            </div>
-
-            {/* Connector arrow between cards */}
-            {i < steps.length - 1 && (
-              <div style={{
-                width: 24, flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 1,
-              }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              </div>
-            )}
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

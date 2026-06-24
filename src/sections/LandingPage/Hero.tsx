@@ -471,6 +471,7 @@ const Hero = () => {
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
             <button
+              onClick={() => { window.location.href = '/app'; }}
               onMouseEnter={() => setPrimaryHover(true)}
               onMouseLeave={() => setPrimaryHover(false)}
               style={{

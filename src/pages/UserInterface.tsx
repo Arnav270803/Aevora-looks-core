@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   UserHorizontalNavigation,
   UIHeroNavbar,
   ToolsAvailable,
   AdCreationSection,
 } from '../sections/UserInterface';
+import type { WorkflowStepId } from '../sections/UserInterface/workflow';
 
 const UserInterface = () => {
+  const [activeStep, setActiveStep] = useState<WorkflowStepId>('prompt-reference');
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', -apple-system, sans-serif" }}>
       {/* Sidebar */}
@@ -21,8 +24,8 @@ const UserInterface = () => {
       }}>
         <UIHeroNavbar />
         <main style={{ flex: 1 }}>
-          <ToolsAvailable />
-          <AdCreationSection />
+          <ToolsAvailable activeStep={activeStep} onStepChange={setActiveStep} />
+          <AdCreationSection activeStep={activeStep} onStepChange={setActiveStep} />
         </main>
       </div>
     </div>

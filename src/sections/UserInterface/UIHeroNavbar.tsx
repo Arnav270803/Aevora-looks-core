@@ -1,4 +1,12 @@
-const UIHeroNavbar = () => (
+import { useState } from 'react';
+import { useAuth } from '../../auth/AuthContext';
+
+const UIHeroNavbar = () => {
+  const [logoutHover, setLogoutHover] = useState(false);
+  const { user, logout } = useAuth();
+  const initial = user?.name?.trim().charAt(0) || user?.email?.trim().charAt(0) || 'A';
+
+  return (
   <div style={{
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '11px 32px', 
@@ -55,15 +63,39 @@ const UIHeroNavbar = () => (
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
       </button>
-      <div style={{
+      <button
+        type="button"
+        onClick={async () => {
+          await logout();
+          window.location.href = '/login';
+        }}
+        onMouseEnter={() => setLogoutHover(true)}
+        onMouseLeave={() => setLogoutHover(false)}
+        style={{
+          background: logoutHover ? '#fff4ef' : 'transparent',
+          border: '1px solid #e5e7eb',
+          borderRadius: 8,
+          padding: '9px 12px',
+          color: logoutHover ? '#e8622a' : '#6b7280',
+          cursor: 'pointer',
+          fontSize: 12.5,
+          fontWeight: 700,
+          fontFamily: 'inherit',
+          transition: 'background 0.18s ease, color 0.18s ease',
+        }}
+      >
+        Logout
+      </button>
+      <div title={user?.email ?? 'Aevora user'} style={{
         width: 36, height: 36, borderRadius: '50%', background: '#3b82f6',
         color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
       }}>
-        A
+        {initial.toUpperCase()}
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default UIHeroNavbar;

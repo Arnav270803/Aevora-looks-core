@@ -67,6 +67,7 @@ const LandingNavbar = () => {
         {/* Right Side: CTA Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <button
+            onClick={() => { window.location.href = '/login'; }}
             style={{
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
               fontSize: '13px',
@@ -118,6 +119,7 @@ const LandingNavbar = () => {
           </button>
 
           <button
+            onClick={() => { window.location.href = '/login'; }}
             style={{
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
               fontSize: '13px',

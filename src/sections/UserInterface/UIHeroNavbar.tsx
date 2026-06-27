@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 
-const UIHeroNavbar = () => {
+const UIHeroNavbar = ({ onCreateAd }: { onCreateAd: () => void }) => {
   const [logoutHover, setLogoutHover] = useState(false);
   const { user, logout } = useAuth();
   const initial = user?.name?.trim().charAt(0) || user?.email?.trim().charAt(0) || 'A';
@@ -43,7 +43,10 @@ const UIHeroNavbar = () => {
       }}>⌘K</kbd>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <button style={{
+      <button
+        type="button"
+        onClick={onCreateAd}
+        style={{
         display: 'flex', alignItems: 'center', gap: 7,
         background: '#e8622a', color: '#fff', border: 'none', borderRadius: 8,
         padding: '9px 18px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer',

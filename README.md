@@ -8,7 +8,7 @@ Create `.env` from `.env.example`:
 
 ```env
 VITE_GOOGLE_CLIENT_ID=your_google_web_client_id
-VITE_API_BASE_URL=http://localhost:4000/api
+VITE_API_BASE_URL=http://localhost:4000
 ```
 
 Run the frontend:

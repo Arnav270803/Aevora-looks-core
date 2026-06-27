@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+export type WorkspaceView = 'home' | 'create-ad' | 'templates' | 'assistant' | 'my-ads' | 'brand-kit';
+
 const NavItem = ({
   label, icon, isActive, onClick,
 }: {
@@ -29,10 +31,35 @@ const SectionLabel = ({ children }: { children: string }) => (
   </div>
 );
 
-const UserHorizontalNavigation = () => {
-  const [active, setActive] = useState('Home');
-  const nav = (label: string, icon: React.ReactElement) => (
-    <NavItem key={label} label={label} icon={icon} isActive={active === label} onClick={() => setActive(label)} />
+const viewToLabel: Record<WorkspaceView, string> = {
+  home: 'Home',
+  'create-ad': 'Create Ad',
+  templates: 'Templates',
+  assistant: 'AI Assistant',
+  'my-ads': 'My Ads',
+  'brand-kit': 'Brand Kit',
+};
+
+const UserHorizontalNavigation = ({
+  activeView,
+  onViewChange,
+}: {
+  activeView: WorkspaceView;
+  onViewChange: (view: WorkspaceView) => void;
+}) => {
+  const [activeFallback, setActiveFallback] = useState<WorkspaceView>('home');
+  const active = activeView || activeFallback;
+  const nav = (view: WorkspaceView, icon: React.ReactElement) => (
+    <NavItem
+      key={view}
+      label={viewToLabel[view]}
+      icon={icon}
+      isActive={active === view}
+      onClick={() => {
+        setActiveFallback(view);
+        onViewChange(view);
+      }}
+    />
   );
 
   return (
@@ -42,27 +69,41 @@ const UserHorizontalNavigation = () => {
       flexDirection: 'column', fontFamily: "'Inter', -apple-system, sans-serif", flexShrink: 0,
     }}>
       {/* Logo */}
-      <div style={{ padding: '18px 16px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <button
+        type="button"
+        onClick={() => onViewChange('home')}
+        style={{
+          padding: '18px 16px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          border: 'none',
+          background: 'transparent',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+          textAlign: 'left',
+        }}
+      >
         <img src="/logo.svg" alt="Aevora" style={{ width: 30, height: 30, objectFit: 'contain' }} />
         <span style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.4px' }}>
           Ae<span style={{ color: '#e8622a' }}>vora</span>
         </span>
-      </div>
+      </button>
 
       {/* Nav */}
       <div style={{ flex: 1, padding: '0 8px', overflowY: 'auto' }}>
-        {nav('Home', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>)}
+        {nav('home', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>)}
 
         <SectionLabel>Create</SectionLabel>
-        {nav('Create Ad', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>)}
-        {nav('Templates', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>)}
+        {nav('create-ad', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>)}
+        {nav('templates', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>)}
 
         <SectionLabel>Tools</SectionLabel>
-        {nav('AI Assistant', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
+        {nav('assistant', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
 
         <SectionLabel>Library</SectionLabel>
-        {nav('My Ads', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>)}
-        {nav('Brand Kit', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L3 14.67V21h6.33l10.06-10.06a5.5 5.5 0 0 0 0-7.78z"/></svg>)}
+        {nav('my-ads', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>)}
+        {nav('brand-kit', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L3 14.67V21h6.33l10.06-10.06a5.5 5.5 0 0 0 0-7.78z"/></svg>)}
       </div>
 
       {/* Bottom */}

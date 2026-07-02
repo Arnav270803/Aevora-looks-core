@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { getCurrentUser, logoutSession, refreshSession, signInWithGoogle, type AuthUser } from './authApi';
+import { getCurrentUser, logoutSession, refreshSession, signInForDevelopment, signInWithGoogle, type AuthUser } from './authApi';
 import { tokenStorage } from './tokenStorage';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
@@ -10,6 +10,7 @@ type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   signInWithGoogleCredential: (credential: string) => Promise<void>;
+  signInWithDevUser: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -83,6 +84,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     saveSession(session);
   }, [saveSession]);
 
+  const signInWithDevUser = useCallback(async () => {
+    const session = await signInForDevelopment();
+    saveSession(session);
+  }, [saveSession]);
+
   const logout = useCallback(async () => {
     const refreshToken = tokenStorage.getRefreshToken();
 
@@ -100,8 +106,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     isAuthenticated: status === 'authenticated',
     signInWithGoogleCredential,
+    signInWithDevUser,
     logout,
-  }), [logout, signInWithGoogleCredential, status, user]);
+  }), [logout, signInWithDevUser, signInWithGoogleCredential, status, user]);
 
   return (
     <AuthContext.Provider value={value}>

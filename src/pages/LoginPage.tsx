@@ -32,8 +32,9 @@ const LoginPage = () => {
   const [authError, setAuthError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const googleButtonRef = useRef<HTMLDivElement>(null);
-  const { status, isAuthenticated, signInWithGoogleCredential } = useAuth();
+  const { status, isAuthenticated, signInWithDevUser, signInWithGoogleCredential } = useAuth();
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const showDevLogin = import.meta.env.DEV;
 
   useEffect(() => {
     const onResize = () => setScreen(getScreen(window.innerWidth));
@@ -69,6 +70,19 @@ const LoginPage = () => {
       setIsSubmitting(false);
     }
   }, [nextPath, signInWithGoogleCredential]);
+
+  const handleDevSignIn = useCallback(async () => {
+    setAuthError('');
+    setIsSubmitting(true);
+
+    try {
+      await signInWithDevUser();
+      window.location.replace(nextPath);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Development sign-in failed. Please try again.');
+      setIsSubmitting(false);
+    }
+  }, [nextPath, signInWithDevUser]);
 
   useEffect(() => {
     if (!googleClientId) {
@@ -277,6 +291,29 @@ const LoginPage = () => {
             >
               <div ref={googleButtonRef} />
             </div>
+
+            {showDevLogin && (
+              <button
+                type="button"
+                disabled={isSubmitting || status === 'loading'}
+                onClick={handleDevSignIn}
+                style={{
+                  width: '100%',
+                  marginTop: 12,
+                  border: '1px solid #dbeafe',
+                  background: isSubmitting || status === 'loading' ? '#f8fafc' : '#eff6ff',
+                  color: isSubmitting || status === 'loading' ? '#a9b4c5' : '#185fa5',
+                  borderRadius: 8,
+                  padding: '11px 14px',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  cursor: isSubmitting || status === 'loading' ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                Continue as Local Dev User
+              </button>
+            )}
 
             {isSubmitting && (
               <div style={{ marginTop: 12, fontSize: 12.5, color: '#185fa5', fontWeight: 700 }}>

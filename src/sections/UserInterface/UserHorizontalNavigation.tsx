@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 
-export type WorkspaceView = 'home' | 'create-ad' | 'templates' | 'assistant' | 'my-ads' | 'brand-kit';
+export type WorkspaceView =
+  | 'home'
+  | 'create-ad'
+  | 'templates'
+  | 'assistant'
+  | 'debugging'
+  | 'library'
+  | 'videos'
+  | 'my-ads'
+  | 'brand-kit';
 
 const NavItem = ({
   label, icon, isActive, onClick,
@@ -36,6 +45,9 @@ const viewToLabel: Record<WorkspaceView, string> = {
   'create-ad': 'Create Ad',
   templates: 'Templates',
   assistant: 'AI Assistant',
+  debugging: 'Debugging',
+  library: 'Library',
+  videos: 'Videos',
   'my-ads': 'My Ads',
   'brand-kit': 'Brand Kit',
 };
@@ -100,8 +112,11 @@ const UserHorizontalNavigation = ({
 
         <SectionLabel>Tools</SectionLabel>
         {nav('assistant', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
+        {nav('debugging', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2l1.88 1.88"/><path d="M14.12 3.88L16 2"/><path d="M9 7h6"/><path d="M7 11h10"/><path d="M7 15h10"/><path d="M9 21h6"/><rect x="6" y="7" width="12" height="14" rx="6"/><path d="M3 13h3"/><path d="M18 13h3"/></svg>)}
 
-        <SectionLabel>Library</SectionLabel>
+        <SectionLabel>Assets</SectionLabel>
+        {nav('library', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg>)}
+        {nav('videos', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12l-7 4V8l7 4z"/><rect x="2" y="6" width="13" height="12" rx="2"/></svg>)}
         {nav('my-ads', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>)}
         {nav('brand-kit', <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L3 14.67V21h6.33l10.06-10.06a5.5 5.5 0 0 0 0-7.78z"/></svg>)}
       </div>

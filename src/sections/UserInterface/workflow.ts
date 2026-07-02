@@ -13,6 +13,11 @@ export type WorkflowStep = {
   accent: string;
 };
 
+export type WorkflowTransition = {
+  from: WorkflowStepId;
+  to: WorkflowStepId;
+} | null;
+
 export const WORKFLOW_STEPS: WorkflowStep[] = [
   {
     id: 'prompt-reference',

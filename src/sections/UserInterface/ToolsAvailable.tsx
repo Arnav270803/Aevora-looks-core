@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import type { CSSProperties, ReactElement } from 'react';
-import { WORKFLOW_STEPS, type WorkflowStepId } from './workflow';
+import { WORKFLOW_STEPS, type WorkflowStepId, type WorkflowTransition } from './workflow';
 
 type ToolsAvailableProps = {
   activeStep: WorkflowStepId;
+  transitionEdge?: WorkflowTransition;
   onStepChange: (step: WorkflowStepId) => void;
 };
 
@@ -43,25 +44,26 @@ const iconMap: Record<WorkflowStepId, ReactElement> = {
   ),
 };
 
-const getStatus = (index: number, activeIndex: number) => {
-  if (index === activeIndex) return 'Current';
-  if (index < activeIndex) return 'Done';
-  if (index === activeIndex + 1) return 'Next';
-  return 'Pending';
-};
-
-const ToolsAvailable = ({ activeStep, onStepChange }: ToolsAvailableProps) => {
+const ToolsAvailable = ({ activeStep, transitionEdge = null, onStepChange }: ToolsAvailableProps) => {
   const [hovered, setHovered] = useState<WorkflowStepId | null>(null);
-  const activeIndex = WORKFLOW_STEPS.findIndex((step) => step.id === activeStep);
+  const transitionFromIndex = transitionEdge
+    ? WORKFLOW_STEPS.findIndex((step) => step.id === transitionEdge.from)
+    : -1;
+  const transitionToIndex = transitionEdge
+    ? WORKFLOW_STEPS.findIndex((step) => step.id === transitionEdge.to)
+    : -1;
+  const activeSegmentIndex = transitionToIndex === transitionFromIndex + 1 ? transitionFromIndex : -1;
 
   const summaryGrid: CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(5, minmax(150px, 1fr))',
-    gap: 12,
+    gridTemplateColumns: 'repeat(5, minmax(132px, 205px))',
+    columnGap: 18,
+    rowGap: 10,
+    justifyContent: 'space-between',
   };
 
   return (
-    <div style={{ padding: '32px 32px 18px', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{ padding: '32px 32px 18px', fontFamily: "'Work Sans', -apple-system, sans-serif" }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22, gap: 24 }}>
         <div>
           <span style={{
@@ -80,12 +82,42 @@ const ToolsAvailable = ({ activeStep, onStepChange }: ToolsAvailableProps) => {
         </p>
       </div>
 
+      <div style={{ position: 'relative' }}>
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: '10%',
+            right: '10%',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            height: 2,
+            borderRadius: 999,
+            background: 'linear-gradient(90deg, rgba(203,213,225,0.42), rgba(148,163,184,0.7), rgba(203,213,225,0.42))',
+            zIndex: 0,
+          }}
+        />
+        {activeSegmentIndex >= 0 && (
+          <div
+            aria-hidden="true"
+            className="workflow-chain-glow"
+            style={{
+              '--segment-index': activeSegmentIndex,
+              position: 'absolute',
+              left: 'calc(10% + (20% * var(--segment-index)))',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '20%',
+              height: 2,
+              borderRadius: 999,
+              zIndex: 0,
+            } as CSSProperties}
+          />
+        )}
       <div style={summaryGrid}>
-        {WORKFLOW_STEPS.map((step, index) => {
+        {WORKFLOW_STEPS.map((step) => {
           const isActive = step.id === activeStep;
           const isHovered = hovered === step.id;
-          const status = getStatus(index, activeIndex);
-          const statusColor = status === 'Current' ? step.accent : status === 'Done' ? '#059669' : '#94a3b8';
 
           return (
             <button
@@ -96,21 +128,22 @@ const ToolsAvailable = ({ activeStep, onStepChange }: ToolsAvailableProps) => {
               onMouseLeave={() => setHovered(null)}
               style={{
                 textAlign: 'left',
-                border: `1px solid ${isActive ? step.accent : isHovered ? step.accent + '55' : '#e8eaf3'}`,
-                background: isActive ? '#fffaf7' : '#ffffff',
-                borderRadius: 10,
-                padding: '15px 16px',
-                minHeight: 142,
+                border: `1px solid ${isActive ? '#111827' : isHovered ? '#cbd5e1' : '#e6e9f0'}`,
+                background: '#ffffff',
+                borderRadius: 8,
+                padding: '13px 14px 14px',
+                minHeight: 112,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 boxShadow: isActive
-                  ? '0 12px 30px rgba(232,98,42,0.16), 0 2px 8px rgba(15,23,42,0.06)'
+                  ? '0 12px 26px rgba(15,23,42,0.10), 0 1px 0 rgba(15,23,42,0.03)'
                   : isHovered
-                    ? '0 10px 24px rgba(99,102,241,0.16), 0 2px 8px rgba(15,23,42,0.05)'
-                    : '0 4px 14px rgba(99,102,241,0.08)',
+                    ? '0 10px 22px rgba(15,23,42,0.08), 0 1px 0 rgba(15,23,42,0.03)'
+                    : '0 1px 2px rgba(15,23,42,0.04)',
                 transition: 'border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
                 transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
                 position: 'relative',
+                zIndex: 1,
                 overflow: 'hidden',
               }}
             >
@@ -119,47 +152,34 @@ const ToolsAvailable = ({ activeStep, onStepChange }: ToolsAvailableProps) => {
                 background: isActive ? step.accent : 'transparent',
               }} />
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 16 }}>
-                <div>
-                  <div style={{ fontSize: 10.5, color: '#a9b4c5', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 6 }}>
-                    STEP {step.num}
-                  </div>
-                  <span style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    color: statusColor,
-                    background: status === 'Current' ? step.accent + '12' : status === 'Done' ? '#ecfdf5' : '#f8fafc',
-                    border: `1px solid ${status === 'Current' ? step.accent + '30' : status === 'Done' ? '#bbf7d0' : '#e2e8f0'}`,
-                    borderRadius: 999,
-                    padding: '3px 8px',
-                  }}>
-                    {status}
-                  </span>
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 22, height: 2, borderRadius: 99, background: isActive ? step.accent : '#e2e8f0', marginTop: 13 }} />
                 <div style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 9,
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: isActive ? step.accent : '#94a3b8',
-                  background: isActive ? step.accent + '12' : '#f8fafc',
+                  color: isActive ? '#111827' : '#8a97aa',
+                  background: isActive ? '#f3f4f6' : '#f8fafc',
+                  border: '1px solid #eef2f7',
                   flexShrink: 0,
                 }}>
                   {iconMap[step.id]}
                 </div>
               </div>
 
-              <div style={{ fontSize: 13.5, fontWeight: 750, color: '#0f172a', lineHeight: 1.25, marginBottom: 8 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.25, marginBottom: 6 }}>
                 {step.title}
               </div>
-              <div style={{ fontSize: 12, color: '#8794aa', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 11.5, color: '#7b8798', lineHeight: 1.45 }}>
                 {step.summary}
               </div>
             </button>
           );
         })}
+      </div>
       </div>
     </div>
   );

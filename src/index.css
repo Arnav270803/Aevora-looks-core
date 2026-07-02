@@ -1,7 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 html, body, #root {
   height: auto;
   min-height: 100%;
   overflow-x: hidden;
+}
+
+@keyframes workflow-chain-flow {
+  0% {
+    background-position: 115% 0;
+    opacity: 0.5;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -115% 0;
+    opacity: 0.62;
+  }
+}
+
+.workflow-chain-glow {
+  background: linear-gradient(
+    90deg,
+    rgba(232, 98, 42, 0) 0%,
+    rgba(232, 98, 42, 0.2) 18%,
+    rgba(232, 98, 42, 0.95) 46%,
+    rgba(37, 99, 235, 0.9) 68%,
+    rgba(37, 99, 235, 0) 100%
+  );
+  background-size: 220% 100%;
+  box-shadow: 0 0 14px rgba(232, 98, 42, 0.34), 0 0 22px rgba(37, 99, 235, 0.2);
+  animation: workflow-chain-flow 1.05s ease-in-out infinite;
 }

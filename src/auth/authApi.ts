@@ -20,6 +20,16 @@ export function signInWithGoogle(credential: string) {
   });
 }
 
+export function signInForDevelopment() {
+  return apiRequest<AuthSession>('/auth/dev', {
+    method: 'POST',
+    body: {
+      email: 'dev@aevora.local',
+      name: 'Aevora Dev User',
+    },
+  });
+}
+
 export function refreshSession(refreshToken: string) {
   return apiRequest<AuthSession>('/auth/refresh', {
     method: 'POST',

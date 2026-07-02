@@ -33,6 +33,10 @@ export type AdDraft = {
   pipelineSpec?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
+  assets?: AssetRecord[];
+  shots?: ShotRecord[];
+  pipelineJobs?: PipelineJob[];
+  renderOutputs?: RenderOutputRecord[];
   _count?: {
     assets: number;
     pipelineJobs: number;
@@ -90,6 +94,39 @@ export type PipelineJob = {
   createdAt: string;
   updatedAt: string;
   stepRuns?: PipelineStepRun[];
+  renderOutputs?: RenderOutputRecord[];
+};
+
+export type ShotRecord = {
+  id: string;
+  adId: string;
+  shotNumber: number;
+  role: string;
+  status: 'PLANNED' | 'KEYFRAME_READY' | 'VIDEO_READY' | 'FAILED';
+  durationSeconds: number;
+  promptPayload?: Record<string, unknown> | null;
+  keyframeAssetId?: string | null;
+  videoAssetId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RenderOutputRecord = {
+  id: string;
+  adId: string;
+  jobId?: string | null;
+  kind: 'VIDEO' | 'IMAGE' | 'SCRIPT' | 'METADATA';
+  storageProvider: string;
+  storageKey: string;
+  url?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  width?: number | null;
+  height?: number | null;
+  durationMs?: number | null;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CreateProjectPayload = {

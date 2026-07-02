@@ -6,19 +6,24 @@ import {
   createAsset,
   createPipelineJob,
   createProject,
+  getAd,
   listProjects,
   updateAd,
   type AdDraft,
   type AssetRecord,
   type PipelineJob,
+  type PipelineStepRun,
   type ProjectSummary,
+  type RenderOutputRecord,
   type SaveAdPayload,
+  type ShotRecord,
 } from '../../api/workspaceApi';
-import { WORKFLOW_STEPS, type WorkflowStepId } from './workflow';
+import { WORKFLOW_STEPS, type WorkflowStepId, type WorkflowTransition } from './workflow';
 
 type AdCreationSectionProps = {
   activeStep: WorkflowStepId;
   onStepChange: (step: WorkflowStepId) => void;
+  onStepTransitionChange?: (transition: WorkflowTransition) => void;
   onWorkspaceChange?: () => void;
 };
 
@@ -216,7 +221,7 @@ const MiniUpload = ({
         Select product and reference images
       </div>
       <div style={{ fontSize: 12.5, color: '#8a97aa' }}>
-        File metadata is saved now. Binary upload comes in a later loop.
+        Reference metadata is saved with ownership context for the worker.
       </div>
     </div>
     <div style={{ fontSize: 11.5, color: '#a1adbd' }}>
@@ -348,6 +353,31 @@ const InlineStatus = ({ tone, children }: { tone: 'success' | 'error' | 'info'; 
     >
       {children}
     </div>
+  );
+};
+
+const StepBadge = ({ status }: { status?: PipelineStepRun['status'] }) => {
+  const palette = status === 'SUCCEEDED'
+    ? { background: '#ecfdf5', color: '#047857' }
+    : status === 'FAILED'
+      ? { background: '#fff7f7', color: '#b42318' }
+      : status === 'RUNNING'
+        ? { background: '#eff6ff', color: '#185fa5' }
+        : { background: '#f8fafc', color: '#64748b' };
+
+  return (
+    <span style={{
+      borderRadius: 999,
+      background: palette.background,
+      color: palette.color,
+      padding: '4px 8px',
+      fontSize: 11,
+      fontWeight: 800,
+      textTransform: 'uppercase',
+      width: 'fit-content',
+    }}>
+      {status ?? 'PENDING'}
+    </span>
   );
 };
 
@@ -499,8 +529,8 @@ const PromptReferenceStep = ({
           </h3>
           <Checklist items={[
             'Save or update the backend ad draft without losing form data on failure.',
-            'Register selected file metadata against the saved ad draft.',
-            'Queue a pipeline job record. Real generation is intentionally not implemented yet.',
+            'Register selected reference metadata against the saved ad draft.',
+            'Queue a pipeline job for the autonomous worker.',
           ]} />
         </div>
       </aside>
@@ -508,51 +538,73 @@ const PromptReferenceStep = ({
   );
 };
 
-const ShotStep = ({ latestJob }: { latestJob: PipelineJob | null }) => (
+const ShotStep = ({ latestJob, shots, assets }: { latestJob: PipelineJob | null; shots: ShotRecord[]; assets: AssetRecord[] }) => (
   <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 24 }}>
     <div>
       {latestJob && (
         <div style={{ marginBottom: 16 }}>
           <InlineStatus tone="info">
-            Generation job {latestJob.id.slice(0, 8)} is {latestJob.status.toLowerCase()}. Cinematic shots will appear after the future pipeline service is connected.
+            Generation job {latestJob.id.slice(0, 8)} is {latestJob.status.toLowerCase()}.
           </InlineStatus>
         </div>
       )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 14, marginBottom: 18 }}>
-        {['Hero macro', 'Lifestyle angle', 'Packaging reveal'].map((shot, index) => (
-          <div key={shot} style={{
+        {(shots.length > 0 ? shots : fallbackShots).slice(0, 4).map((shot, index) => {
+          const prompt = readObject(shot.promptPayload);
+          const keyframe = assets.find((asset) => asset.id === shot.keyframeAssetId);
+
+          return (
+          <div key={shot.id} style={{
             minHeight: 168,
-            border: `1px solid ${index === 0 ? '#e8622a' : '#e2e8f0'}`,
+            border: `1px solid ${shot.status === 'FAILED' ? '#fecaca' : index === 0 ? '#e8622a' : '#e2e8f0'}`,
             borderRadius: 10,
             background: index === 0 ? '#fffaf7' : '#f8fafc',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: 'grid',
+            alignContent: 'center',
+            gap: 8,
             color: index === 0 ? '#e8622a' : '#94a3b8',
-            fontSize: 13,
+            fontSize: 12.5,
             fontWeight: 800,
-            textAlign: 'center',
             padding: 16,
           }}>
-            {latestJob ? `${shot} pending` : shot}
+            <StepBadge status={shot.status === 'KEYFRAME_READY' || shot.status === 'VIDEO_READY' ? 'SUCCEEDED' : 'PENDING'} />
+            <span style={{ color: '#172033' }}>Shot {shot.shotNumber}: {shot.role}</span>
+            <span style={{ color: '#66758c', lineHeight: 1.45, fontWeight: 650 }}>
+              {String(prompt.visualDescription ?? prompt.captionText ?? 'Waiting for storyboard output.')}
+            </span>
+            {keyframe?.url && <span style={{ color: '#059669' }}>Keyframe record ready</span>}
           </div>
-        ))}
+        );})}
       </div>
       <Checklist items={[
-        'A queued job record exists, but no AI image generation runs in this loop.',
-        'The next service can claim the job and update step statuses.',
-        'Keep editing and saving the draft while generation infrastructure is separate.',
+        'Storyboard shots are persisted by the worker.',
+        'Mock keyframe and clip asset records attach to each shot.',
+        'Failed stages surface through the job status and step list.',
       ]} />
     </div>
     <PreviewPhone label="Shot preview pending" />
   </div>
 );
 
-const ScriptStep = () => (
+const ScriptStep = ({ latestJob }: { latestJob: PipelineJob | null }) => {
+  const brief = readObject(findStepOutput(latestJob, 'selected_creative_brief')?.creativeBrief);
+  const script = readObject(findStepOutput(latestJob, 'script_generation')?.script);
+  const voiceover = Array.isArray(script.voiceover) ? script.voiceover : fallbackScript;
+  const captions = Array.isArray(script.captions) ? script.captions : [];
+
+  return (
   <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 24 }}>
     <div style={{ display: 'grid', gap: 12 }}>
-      {['Hook', 'Problem', 'Benefit', 'Proof', 'CTA'].map((line, index) => (
-        <div key={line} style={{
+      {Boolean(brief.hook) && (
+        <InlineStatus tone="info">
+          Selected brief: {String(brief.hook)}
+        </InlineStatus>
+      )}
+      {voiceover.map((line, index) => {
+        const item = readObject(line);
+
+        return (
+        <div key={`${String(item.text ?? 'line')}-${index}`} style={{
           display: 'grid',
           gridTemplateColumns: '90px 1fr',
           gap: 12,
@@ -563,21 +615,32 @@ const ScriptStep = () => (
           padding: '12px',
         }}>
           <span style={{ fontSize: 12, color: '#e8622a', fontWeight: 800 }}>
-            {index + 1}. {line}
+            {index + 1}. {String(item.startSecond ?? index)}-{String(item.endSecond ?? index + 1)}s
           </span>
-          <span style={{ height: 10, borderRadius: 999, background: '#eef2f7', display: 'block' }} />
+          <span style={{ fontSize: 12.5, color: '#27324a', lineHeight: 1.45, fontWeight: 650 }}>
+            {String(item.text ?? 'Waiting for script output.')}
+          </span>
         </div>
-      ))}
+      );})}
+      {captions.length > 0 && (
+        <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+          Captions: {captions.map((caption) => String(readObject(caption).text ?? '')).filter(Boolean).join(' / ')}
+        </div>
+      )}
     </div>
     <PreviewPhone label="Script timing" />
   </div>
-);
+  );
+};
 
-const SceneStep = () => (
+const SceneStep = ({ shots, assets }: { shots: ShotRecord[]; assets: AssetRecord[] }) => (
   <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 24 }}>
     <div style={{ display: 'grid', gap: 12 }}>
-      {['Scene 01', 'Scene 02', 'Scene 03', 'Scene 04'].map((scene, index) => (
-        <div key={scene} style={{
+      {(shots.length > 0 ? shots : fallbackShots).map((shot, index) => {
+        const video = assets.find((asset) => asset.id === shot.videoAssetId);
+
+        return (
+        <div key={shot.id} style={{
           display: 'grid',
           gridTemplateColumns: '96px 1fr 84px',
           gap: 14,
@@ -589,18 +652,27 @@ const SceneStep = () => (
         }}>
           <div style={{ height: 52, borderRadius: 8, background: index === 0 ? '#fff4ef' : '#f1f5f9' }} />
           <div>
-            <div style={{ fontSize: 13, color: '#172033', fontWeight: 800, marginBottom: 6 }}>{scene}</div>
-            <div style={{ height: 8, width: '78%', borderRadius: 999, background: '#eef2f7' }} />
+            <div style={{ fontSize: 13, color: '#172033', fontWeight: 800, marginBottom: 6 }}>
+              Scene {String(shot.shotNumber).padStart(2, '0')} / {shot.role}
+            </div>
+            <div style={{ fontSize: 12, color: video ? '#059669' : '#94a3b8', fontWeight: 700 }}>
+              {video ? 'Mock clip record ready' : 'Waiting for clip'}
+            </div>
           </div>
-          <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 700 }}>0:0{index + 3}</span>
+          <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 700 }}>{shot.durationSeconds}s</span>
         </div>
-      ))}
+      );})}
     </div>
     <PreviewPhone label="Scene preview" />
   </div>
 );
 
-const FinalVideoStep = () => (
+const FinalVideoStep = ({ renderOutputs }: { renderOutputs: RenderOutputRecord[] }) => {
+  const finalRender = renderOutputs.find((output) => output.kind === 'VIDEO');
+  const qcOutput = renderOutputs.find((output) => output.kind === 'METADATA' && readObject(output.metadata).qcReport);
+  const qcReport = readObject(readObject(qcOutput?.metadata).qcReport);
+
+  return (
   <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 24 }}>
     <div style={{ display: 'grid', alignContent: 'start', gap: 16 }}>
       <div style={{
@@ -614,20 +686,35 @@ const FinalVideoStep = () => (
         color: '#64748b',
         fontSize: 14,
         fontWeight: 800,
+        padding: 18,
+        textAlign: 'center',
       }}>
-        Final timeline and export controls
+        {finalRender
+          ? `Final ${finalRender.width ?? 1080}x${finalRender.height ?? 1920} mock render record ready`
+          : 'Final timeline and export controls'}
       </div>
+      {finalRender?.url && (
+        <a href={finalRender.url} target="_blank" rel="noreferrer" style={{ color: '#185fa5', fontSize: 13, fontWeight: 800 }}>
+          Open render URL
+        </a>
+      )}
+      {Boolean(qcReport.status) && (
+        <InlineStatus tone={qcReport.status === 'passed' ? 'success' : 'error'}>
+          QC {String(qcReport.status)}. {Array.isArray(qcReport.checks) ? `${qcReport.checks.length} checks recorded.` : ''}
+        </InlineStatus>
+      )}
       <Checklist items={[
-        'Final video generation is outside this loop.',
-        'The queued job record is ready for the future pipeline service.',
-        'Render outputs will be attached by backend records later.',
+        'Final render output is stored as a backend record.',
+        'QC is persisted as structured metadata.',
+        'Real FFmpeg rendering can replace mock output without changing the UI contract.',
       ]} />
     </div>
     <PreviewPhone label="Final video" />
   </div>
-);
+  );
+};
 
-const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCreationSectionProps) => {
+const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, onWorkspaceChange }: AdCreationSectionProps) => {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -637,6 +724,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
   const [files, setFiles] = useState<File[]>([]);
   const [registeredAssets, setRegisteredAssets] = useState<AssetRecord[]>([]);
   const [latestJob, setLatestJob] = useState<PipelineJob | null>(null);
+  const [polledAd, setPolledAd] = useState<AdDraft | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -677,6 +765,36 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
     };
   }, []);
 
+  useEffect(() => {
+    if (!adDraft) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const refreshAd = async () => {
+      try {
+        const nextAd = await getAd(adDraft.id);
+
+        if (!cancelled) {
+          setPolledAd(nextAd);
+          setRegisteredAssets(nextAd.assets ?? []);
+          setLatestJob(nextAd.pipelineJobs?.[0] ?? null);
+        }
+      } catch {
+        // User-triggered actions still own visible error state.
+      }
+    };
+
+    void refreshAd();
+    const interval = window.setInterval(refreshAd, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [adDraft?.id]);
+
   if (!fallbackStep) {
     return null;
   }
@@ -699,6 +817,10 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
   }, [activeStep, latestJob?.status, saveState]);
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
+  const displayAd = polledAd ?? adDraft;
+  const displayAssets = displayAd?.assets ?? registeredAssets;
+  const displayShots = displayAd?.shots ?? [];
+  const displayRenderOutputs = displayAd?.renderOutputs ?? latestJob?.renderOutputs ?? [];
 
   const panelStyle: CSSProperties = {
     background: '#ffffff',
@@ -767,6 +889,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
         : await createAd(projectId, payload);
 
       setAdDraft(savedAd);
+      setPolledAd(savedAd);
       setSuccess(adDraft ? 'Draft updates saved.' : 'Ad draft saved to the backend.');
       onWorkspaceChange?.();
 
@@ -840,11 +963,16 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
   const handlePrimaryClick = async () => {
     if (activeStep !== 'prompt-reference') {
       if (next) {
-        onStepChange(next.id);
+        onStepTransitionChange?.({ from: activeStep, to: next.id });
+        window.setTimeout(() => {
+          onStepChange(next.id);
+          window.setTimeout(() => onStepTransitionChange?.(null), 420);
+        }, 480);
       }
       return;
     }
 
+    onStepTransitionChange?.({ from: 'prompt-reference', to: 'cinematic-shots' });
     setSaveState('queueing');
     setError(null);
     setSuccess(null);
@@ -855,30 +983,30 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
       const job = await createPipelineJob(draft.id, {
         type: 'AD_GENERATION',
         priority: 0,
-        provider: 'future-pipeline',
+        provider: 'aevora-agentic-core',
         requestPayload: {
           source: 'create-ad-ui',
           workflow: 'default-product-ad',
           adId: draft.id,
           selectedAssetCount: files.length,
-          generationImplemented: false,
+          generationImplemented: true,
         },
-        steps: [
-          { name: 'shot_generation', sequence: 1, inputPayload: { status: 'pending_implementation' } },
-          { name: 'script_generation', sequence: 2, inputPayload: { status: 'pending_implementation' } },
-          { name: 'scene_generation', sequence: 3, inputPayload: { status: 'pending_implementation' } },
-          { name: 'final_video', sequence: 4, inputPayload: { status: 'pending_implementation' } },
-        ],
+        steps: pipelineWorkerSteps.map((name, index) => ({
+          name,
+          sequence: index + 1,
+          inputPayload: { source: 'create-ad-ui' },
+        })),
       });
 
       setLatestJob(job);
-      setSuccess(`Pipeline job queued. Status: ${job.status}. Generation is not implemented in this loop.`);
+      setSuccess(`Pipeline job queued. Status: ${job.status}. Start the agentic worker to generate outputs.`);
       onWorkspaceChange?.();
       onStepChange('cinematic-shots');
     } catch (jobError) {
       setError(getApiErrorMessage(jobError, 'Unable to queue the generation job.'));
     } finally {
       setSaveState('idle');
+      window.setTimeout(() => onStepTransitionChange?.(null), 520);
     }
   };
 
@@ -896,6 +1024,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
         onProjectChange={(projectId) => {
           setSelectedProjectId(projectId);
           setAdDraft(null);
+          setPolledAd(null);
           setRegisteredAssets([]);
           setLatestJob(null);
           setError(null);
@@ -905,14 +1034,14 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
         onFilesSelected={handleFilesSelected}
       />
     ),
-    'cinematic-shots': <ShotStep latestJob={latestJob} />,
-    'script-writing': <ScriptStep />,
-    'scene-generation': <SceneStep />,
-    'final-video': <FinalVideoStep />,
+    'cinematic-shots': <ShotStep latestJob={latestJob} shots={displayShots} assets={displayAssets} />,
+    'script-writing': <ScriptStep latestJob={latestJob} />,
+    'scene-generation': <SceneStep shots={displayShots} assets={displayAssets} />,
+    'final-video': <FinalVideoStep renderOutputs={displayRenderOutputs} />,
   };
 
   return (
-    <section style={{ padding: '0 32px 36px', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <section style={{ padding: '0 32px 36px', fontFamily: "'Work Sans', -apple-system, sans-serif" }}>
       <div style={panelStyle}>
         <div style={{
           display: 'flex',
@@ -1014,7 +1143,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onWorkspaceChange }: AdCr
             {success && <InlineStatus tone="success">{success}</InlineStatus>}
             {latestJob && (
               <InlineStatus tone="info">
-                Latest job: {latestJob.status}. This is a backend record only; no real generation runs yet.
+                Latest job: {latestJob.status}. Worker progress is shown from backend step records.
               </InlineStatus>
             )}
           </div>
@@ -1045,9 +1174,73 @@ function buildAdPayload(form: DraftForm, activeStep: WorkflowStepId): SaveAdPayl
     },
     pipelineSpec: {
       currentStep: activeStep,
-      generationImplemented: false,
+      generationImplemented: true,
     },
   });
+}
+
+const pipelineWorkerSteps = [
+  'hydrate_input',
+  'product_analysis',
+  'creative_concepts',
+  'concept_scoring',
+  'selected_creative_brief',
+  'script_generation',
+  'shot_list_generation',
+  'keyframe_generation',
+  'video_clip_generation',
+  'final_render',
+  'qc',
+];
+
+const fallbackShots: ShotRecord[] = [
+  {
+    id: 'fallback-shot-1',
+    adId: 'fallback-ad',
+    shotNumber: 1,
+    role: 'hook',
+    status: 'PLANNED',
+    durationSeconds: 3,
+    promptPayload: { visualDescription: 'Waiting for storyboard output.' },
+    createdAt: '',
+    updatedAt: '',
+  },
+  {
+    id: 'fallback-shot-2',
+    adId: 'fallback-ad',
+    shotNumber: 2,
+    role: 'product_hero',
+    status: 'PLANNED',
+    durationSeconds: 4,
+    promptPayload: { visualDescription: 'Product reveal will appear here.' },
+    createdAt: '',
+    updatedAt: '',
+  },
+  {
+    id: 'fallback-shot-3',
+    adId: 'fallback-ad',
+    shotNumber: 3,
+    role: 'benefit',
+    status: 'PLANNED',
+    durationSeconds: 4,
+    promptPayload: { visualDescription: 'Benefit shot will appear here.' },
+    createdAt: '',
+    updatedAt: '',
+  },
+];
+
+const fallbackScript = [
+  { startSecond: 0, endSecond: 3, text: 'Waiting for generated hook.' },
+  { startSecond: 3, endSecond: 8, text: 'Generated product story will appear here.' },
+  { startSecond: 8, endSecond: 15, text: 'CTA line will appear here.' },
+];
+
+function findStepOutput(job: PipelineJob | null, name: string) {
+  return readObject(job?.stepRuns?.find((step) => step.name === name)?.outputPayload);
+}
+
+function readObject(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
 function pruneEmpty<T extends Record<string, unknown>>(value: T): T {

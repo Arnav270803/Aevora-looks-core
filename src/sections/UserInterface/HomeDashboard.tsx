@@ -350,7 +350,7 @@ const HomeDashboard = ({ onCreateAd, refreshKey = 0 }: HomeDashboardProps) => {
               Pipeline preview
             </div>
             <div style={{ fontSize: 12.5, color: '#718096', lineHeight: 1.55, marginBottom: 14 }}>
-              This loop queues generation jobs only. The separate AI/video pipeline will consume those records later.
+              Upload a product image, queue a generation job, and let the local agentic worker build the final video.
             </div>
             <button
               type="button"
@@ -382,7 +382,7 @@ const HomeDashboard = ({ onCreateAd, refreshKey = 0 }: HomeDashboardProps) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 14, marginBottom: 22 }}>
         <Metric label="Projects" value={loading ? '-' : String(projects.length)} detail="Backend projects owned by your account." />
         <Metric label="Ad drafts" value={loading ? '-' : String(adCount)} detail="Drafts saved through the Create Ad workflow." />
-        <Metric label="Assets / Jobs" value={loading ? '-' : `${registeredAssets}/${queuedJobs}`} detail="Registered metadata records and queued jobs." />
+        <Metric label="Assets / Jobs" value={loading ? '-' : `${registeredAssets}/${queuedJobs}`} detail="Uploaded local assets and pipeline jobs." />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(320px, 0.8fr)', gap: 22 }}>
@@ -399,7 +399,7 @@ const HomeDashboard = ({ onCreateAd, refreshKey = 0 }: HomeDashboardProps) => {
               active
               badge="Fastest"
               title="Start with product images"
-              copy="Select local references and register their metadata with an ad draft."
+              copy="Upload a product image and attach it to an ad draft."
               onClick={onCreateAd}
             />
             <QuickAction
@@ -411,7 +411,7 @@ const HomeDashboard = ({ onCreateAd, refreshKey = 0 }: HomeDashboardProps) => {
             <QuickAction
               badge="Queued"
               title="Prepare generation"
-              copy="Create a pending pipeline job record for the future generation service."
+              copy="Queue a video generation job for the local agentic worker."
               onClick={onCreateAd}
             />
           </div>

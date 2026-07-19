@@ -3,11 +3,11 @@ import type { CSSProperties, ReactNode } from 'react';
 import { getApiErrorMessage } from '../../api/client';
 import {
   createAd,
-  createAsset,
   createPipelineJob,
   createProject,
   getAd,
   listProjects,
+  uploadAsset,
   updateAd,
   type AdDraft,
   type AssetRecord,
@@ -39,7 +39,9 @@ type DraftForm = {
   imageGuidance: string[];
 };
 
-type SaveState = 'idle' | 'saving' | 'registering-assets' | 'queueing';
+type SaveState = 'idle' | 'saving' | 'registering-assets' | 'queueing' | 'downloading';
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const defaultForm: DraftForm = {
   productName: '',
@@ -221,11 +223,11 @@ const MiniUpload = ({
         Select product and reference images
       </div>
       <div style={{ fontSize: 12.5, color: '#8a97aa' }}>
-        Reference metadata is saved with ownership context for the worker.
+        Images are stored locally for text + image video generation.
       </div>
     </div>
     <div style={{ fontSize: 11.5, color: '#a1adbd' }}>
-      {files.length > 0 ? `${files.length} local file${files.length === 1 ? '' : 's'} selected` : 'JPG, PNG, WebP metadata up to 20MB'}
+      {files.length > 0 ? `${files.length} local file${files.length === 1 ? '' : 's'} selected` : 'JPG, PNG, or WebP up to 5MB each'}
     </div>
   </label>
 );
@@ -656,7 +658,7 @@ const SceneStep = ({ shots, assets }: { shots: ShotRecord[]; assets: AssetRecord
               Scene {String(shot.shotNumber).padStart(2, '0')} / {shot.role}
             </div>
             <div style={{ fontSize: 12, color: video ? '#059669' : '#94a3b8', fontWeight: 700 }}>
-              {video ? 'Mock clip record ready' : 'Waiting for clip'}
+              {video ? 'Video clip ready' : 'Waiting for clip'}
             </div>
           </div>
           <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 700 }}>{shot.durationSeconds}s</span>
@@ -669,6 +671,7 @@ const SceneStep = ({ shots, assets }: { shots: ShotRecord[]; assets: AssetRecord
 
 const FinalVideoStep = ({ renderOutputs }: { renderOutputs: RenderOutputRecord[] }) => {
   const finalRender = renderOutputs.find((output) => output.kind === 'VIDEO');
+  const videoUrl = finalRender?.mimeType?.startsWith('video/') ? finalRender.url : undefined;
   const qcOutput = renderOutputs.find((output) => output.kind === 'METADATA' && readObject(output.metadata).qcReport);
   const qcReport = readObject(readObject(qcOutput?.metadata).qcReport);
 
@@ -677,7 +680,7 @@ const FinalVideoStep = ({ renderOutputs }: { renderOutputs: RenderOutputRecord[]
     <div style={{ display: 'grid', alignContent: 'start', gap: 16 }}>
       <div style={{
         border: '1px solid #e2e8f0',
-        borderRadius: 10,
+        borderRadius: 8,
         background: '#f8fafc',
         minHeight: 220,
         display: 'flex',
@@ -689,13 +692,20 @@ const FinalVideoStep = ({ renderOutputs }: { renderOutputs: RenderOutputRecord[]
         padding: 18,
         textAlign: 'center',
       }}>
-        {finalRender
-          ? `Final ${finalRender.width ?? 1080}x${finalRender.height ?? 1920} mock render record ready`
-          : 'Final timeline and export controls'}
+        {videoUrl ? (
+          <video
+            src={videoUrl}
+            controls
+            playsInline
+            style={{ display: 'block', width: '100%', maxHeight: 520, background: '#0f172a', objectFit: 'contain' }}
+          />
+        ) : finalRender
+          ? 'A render record exists, but it is not a playable MP4.'
+          : 'Waiting for the final MP4.'}
       </div>
-      {finalRender?.url && (
-        <a href={finalRender.url} target="_blank" rel="noreferrer" style={{ color: '#185fa5', fontSize: 13, fontWeight: 800 }}>
-          Open render URL
+      {videoUrl && (
+        <a href={videoUrl} download={`aevora-${finalRender?.id ?? 'video'}.mp4`} style={{ color: '#185fa5', fontSize: 13, fontWeight: 800 }}>
+          Download final MP4
         </a>
       )}
       {Boolean(qcReport.status) && (
@@ -704,12 +714,18 @@ const FinalVideoStep = ({ renderOutputs }: { renderOutputs: RenderOutputRecord[]
         </InlineStatus>
       )}
       <Checklist items={[
-        'Final render output is stored as a backend record.',
-        'QC is persisted as structured metadata.',
-        'Real FFmpeg rendering can replace mock output without changing the UI contract.',
+        videoUrl ? 'Local MP4 is ready.' : 'Local MP4 is pending.',
+        Boolean(qcReport.status) ? `QC status: ${String(qcReport.status)}.` : 'QC is pending.',
       ]} />
     </div>
-    <PreviewPhone label="Final video" />
+    {videoUrl ? (
+      <video
+        src={videoUrl}
+        controls
+        playsInline
+        style={{ display: 'block', width: 154, height: 274, borderRadius: 18, background: '#0f172a', objectFit: 'contain', margin: '0 auto' }}
+      />
+    ) : <PreviewPhone label="Final video" />}
   </div>
   );
 };
@@ -813,7 +829,8 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
     if (activeStep === 'cinematic-shots') return 'Continue to Script Writing';
     if (activeStep === 'script-writing') return 'Generate Scenes';
     if (activeStep === 'scene-generation') return 'Build Final Video';
-    return 'Export Final Video';
+    if (saveState === 'downloading') return 'Downloading...';
+    return 'Download Final Video';
   }, [activeStep, latestJob?.status, saveState]);
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
@@ -841,12 +858,15 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
       return;
     }
 
+    const supportedFiles = nextFiles.filter((file) => supportedImageMimeType(file) && file.size <= MAX_IMAGE_BYTES);
+    const rejectedCount = nextFiles.length - supportedFiles.length;
+
     setFiles((currentFiles) => {
       const existing = new Set(currentFiles.map(fileKey));
-      const additions = nextFiles.filter((file) => !existing.has(fileKey(file)));
+      const additions = supportedFiles.filter((file) => !existing.has(fileKey(file)));
       return [...currentFiles, ...additions];
     });
-    setError(null);
+    setError(rejectedCount > 0 ? `${rejectedCount} image${rejectedCount === 1 ? '' : 's'} skipped. Use JPG, PNG, or WebP files no larger than 5MB.` : null);
     setSuccess(null);
   };
 
@@ -921,26 +941,34 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
     try {
       const alreadyRegistered = new Set(registeredAssets.map((asset) => asset.metadata?.localFileKey).filter(Boolean));
       const pendingFiles = files.filter((file) => !alreadyRegistered.has(fileKey(file)));
-      const newAssets = await Promise.all(pendingFiles.map((file, index) => createAsset(draft.id, {
-        kind: index === 0 && registeredAssets.length === 0 ? 'PRODUCT_IMAGE' : 'REFERENCE_IMAGE',
-        fileName: file.name,
-        mimeType: file.type || 'application/octet-stream',
-        sizeBytes: file.size || undefined,
-        metadata: {
-          source: 'create-ad-ui',
-          localFileKey: fileKey(file),
-          lastModified: file.lastModified,
-        },
-      })));
+      const newAssets = await Promise.all(pendingFiles.map(async (file, index) => {
+        const mimeType = supportedImageMimeType(file);
+        if (!mimeType) {
+          throw new Error(`${file.name} is not a supported image type.`);
+        }
+
+        return uploadAsset(draft.id, {
+          kind: index === 0 && registeredAssets.length === 0 ? 'PRODUCT_IMAGE' : 'REFERENCE_IMAGE',
+          fileName: file.name,
+          mimeType,
+          sizeBytes: file.size,
+          dataBase64: await fileToBase64(file),
+          metadata: {
+            source: 'create-ad-ui',
+            localFileKey: fileKey(file),
+            lastModified: file.lastModified,
+          },
+        });
+      }));
 
       const nextAssets = [...registeredAssets, ...newAssets];
       setRegisteredAssets(nextAssets);
-      setSuccess(newAssets.length > 0 ? `${newAssets.length} asset metadata record${newAssets.length === 1 ? '' : 's'} registered.` : 'Selected assets were already registered.');
+      setSuccess(newAssets.length > 0 ? `${newAssets.length} image${newAssets.length === 1 ? '' : 's'} uploaded locally.` : 'Selected images were already uploaded.');
       onWorkspaceChange?.();
 
       return nextAssets;
     } catch (assetError) {
-      setError(getApiErrorMessage(assetError, 'Unable to register asset metadata.'));
+      setError(getApiErrorMessage(assetError, 'Unable to upload the selected images.'));
       throw assetError;
     } finally {
       setSaveState('idle');
@@ -961,6 +989,26 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
   };
 
   const handlePrimaryClick = async () => {
+    if (activeStep === 'final-video') {
+      const finalRender = displayRenderOutputs.find((output) => output.kind === 'VIDEO' && output.mimeType?.startsWith('video/'));
+      if (!finalRender?.url) {
+        setError('The final MP4 is not ready yet.');
+        return;
+      }
+
+      setSaveState('downloading');
+      setError(null);
+      try {
+        await downloadFile(finalRender.url, `aevora-${finalRender.id}.mp4`);
+        setSuccess('Final MP4 downloaded.');
+      } catch (downloadError) {
+        setError(getApiErrorMessage(downloadError, 'Unable to download the final MP4.'));
+      } finally {
+        setSaveState('idle');
+      }
+      return;
+    }
+
     if (activeStep !== 'prompt-reference') {
       if (next) {
         onStepTransitionChange?.({ from: activeStep, to: next.id });
@@ -1251,6 +1299,51 @@ function pruneEmpty<T extends Record<string, unknown>>(value: T): T {
 
 function fileKey(file: File) {
   return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
+function supportedImageMimeType(file: File): 'image/jpeg' | 'image/png' | 'image/webp' | undefined {
+  if (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp') {
+    return file.type;
+  }
+
+  const extension = file.name.split('.').at(-1)?.toLowerCase();
+  if (extension === 'jpg' || extension === 'jpeg') return 'image/jpeg';
+  if (extension === 'png') return 'image/png';
+  if (extension === 'webp') return 'image/webp';
+  return undefined;
+}
+
+function fileToBase64(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Unable to read ${file.name}.`));
+    reader.onload = () => {
+      const value = typeof reader.result === 'string' ? reader.result : '';
+      const separator = value.indexOf(',');
+      if (separator < 0) {
+        reject(new Error(`Unable to encode ${file.name}.`));
+        return;
+      }
+      resolve(value.slice(separator + 1));
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function downloadFile(url: string, fileName: string) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Download failed with status ${response.status}.`);
+  }
+
+  const objectUrl = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }
 
 function buttonStyle(overrides: CSSProperties): CSSProperties {

@@ -158,6 +158,11 @@ export type CreateAssetPayload = {
   metadata?: Record<string, unknown>;
 };
 
+export type UploadAssetPayload = Omit<CreateAssetPayload, 'mimeType'> & {
+  mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
+  dataBase64: string;
+};
+
 export type CreatePipelineJobPayload = {
   type?: 'AD_GENERATION' | 'RENDER_EXPORT';
   priority?: number;
@@ -205,6 +210,13 @@ export function updateAd(adId: string, payload: SaveAdPayload & { status?: AdSta
 
 export function createAsset(adId: string, payload: CreateAssetPayload) {
   return protectedRequest<{ asset: AssetRecord }>(`/ads/${adId}/assets`, {
+    method: 'POST',
+    body: payload,
+  }).then((response) => response.asset);
+}
+
+export function uploadAsset(adId: string, payload: UploadAssetPayload) {
+  return protectedRequest<{ asset: AssetRecord }>(`/ads/${adId}/assets/upload`, {
     method: 'POST',
     body: payload,
   }).then((response) => response.asset);

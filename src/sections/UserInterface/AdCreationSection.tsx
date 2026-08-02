@@ -1020,6 +1020,20 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
       return;
     }
 
+    const hasImage = files.length > 0
+      || registeredAssets.some((asset) => (
+        (asset.kind === 'PRODUCT_IMAGE' || asset.kind === 'REFERENCE_IMAGE')
+        && asset.status === 'READY'
+        && asset.mimeType.startsWith('image/')
+        && Boolean(asset.url)
+      ));
+
+    if (!hasImage) {
+      setError('Upload at least one product image (JPG, PNG, or WebP up to 5MB) before generating. Video generation needs a product image as its first frame.');
+      setSuccess(null);
+      return;
+    }
+
     onStepTransitionChange?.({ from: 'prompt-reference', to: 'cinematic-shots' });
     setSaveState('queueing');
     setError(null);
@@ -1190,8 +1204,11 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
             {error && <InlineStatus tone="error">{error}</InlineStatus>}
             {success && <InlineStatus tone="success">{success}</InlineStatus>}
             {latestJob && (
-              <InlineStatus tone="info">
-                Latest job: {latestJob.status}. Worker progress is shown from backend step records.
+              <InlineStatus tone={latestJob.status === 'FAILED' ? 'error' : 'info'}>
+                Latest job: {latestJob.status}.
+                {latestJob.errorMessage
+                  ? ` ${latestJob.errorMessage}`
+                  : ' Worker progress is shown from backend step records.'}
               </InlineStatus>
             )}
           </div>

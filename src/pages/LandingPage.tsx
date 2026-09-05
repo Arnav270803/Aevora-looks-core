@@ -3,17 +3,17 @@ import {
   BrandManifest,
   CampaignHero,
   CapabilityPanels,
+  CinematicHero,
   DirectTheStory,
   FaqSection,
   FinalCta,
   InputToCampaign,
   PricingSection,
-  VideoHero,
 } from '../sections/LandingRedesign';
 
 const LandingPage = () => (
   <div className="aevora-redesign">
-    <VideoHero />
+    <CinematicHero />
     <CampaignHero />
     <InputToCampaign />
     <CapabilityPanels />

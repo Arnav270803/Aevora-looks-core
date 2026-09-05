@@ -1,4 +1,5 @@
 export { default as VideoHero } from './VideoHero';
+export { default as CinematicHero } from './CinematicHero';
 export { default as CampaignHero } from './CampaignHero';
 export { default as InputToCampaign } from './InputToCampaign';
 export { default as CapabilityPanels } from './CapabilityPanels';

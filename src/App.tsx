@@ -29,7 +29,7 @@ const LoadingScreen = () => (
 
 const RedirectToLogin = () => {
   useEffect(() => {
-    const next = encodeURIComponent(window.location.pathname);
+    const next = encodeURIComponent(window.location.pathname + window.location.search);
     window.location.replace(`/login?next=${next}`);
   }, []);
 
@@ -40,7 +40,7 @@ function App() {
   const path = window.location.pathname;
   const { status, isAuthenticated } = useAuth();
 
-  if (path === '/app') {
+  if (path === '/app' || path.startsWith('/app/ads/')) {
     if (status === 'loading') {
       return <LoadingScreen />;
     }

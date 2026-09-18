@@ -25,6 +25,7 @@ type AdCreationSectionProps = {
   onStepChange: (step: WorkflowStepId) => void;
   onStepTransitionChange?: (transition: WorkflowTransition) => void;
   onWorkspaceChange?: () => void;
+  onWorkflowModeChange?: (mode: 'GUIDED' | 'LEGACY_AUTOMATIC') => void;
 };
 
 type DraftForm = {
@@ -730,7 +731,8 @@ const FinalVideoStep = ({ renderOutputs }: { renderOutputs: RenderOutputRecord[]
   );
 };
 
-const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, onWorkspaceChange }: AdCreationSectionProps) => {
+const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, onWorkspaceChange, onWorkflowModeChange }: AdCreationSectionProps) => {
+  const [workflowMode, setWorkflowMode] = useState<'GUIDED' | 'LEGACY_AUTOMATIC'>('GUIDED');
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -821,6 +823,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
 
   const ctaLabel = useMemo(() => {
     if (activeStep === 'prompt-reference') {
+      if (workflowMode === 'GUIDED') return 'Save & Open Script Workspace';
       if (saveState === 'queueing') return 'Queueing Shots...';
       if (latestJob?.status === 'QUEUED') return 'Shots Queued';
       return 'Generate Cinematic Shots';
@@ -831,7 +834,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
     if (activeStep === 'scene-generation') return 'Build Final Video';
     if (saveState === 'downloading') return 'Downloading...';
     return 'Download Final Video';
-  }, [activeStep, latestJob?.status, saveState]);
+  }, [activeStep, latestJob?.status, saveState, workflowMode]);
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
   const displayAd = polledAd ?? adDraft;
@@ -903,7 +906,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
 
     try {
       const projectId = await ensureProject();
-      const payload = buildAdPayload(form, activeStep);
+      const payload = { ...buildAdPayload(form, activeStep), workflowMode };
       const savedAd = adDraft
         ? await updateAd(adDraft.id, payload)
         : await createAd(projectId, payload);
@@ -1042,6 +1045,10 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
     try {
       const draft = await saveDraft();
       await registerSelectedAssets(draft);
+      if (workflowMode === 'GUIDED') {
+        window.location.assign(`/app/ads/${draft.id}?step=script`);
+        return;
+      }
       const job = await createPipelineJob(draft.id, {
         type: 'AD_GENERATION',
         priority: 0,
@@ -1213,6 +1220,17 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
             )}
           </div>
         )}
+
+        {activeStep === 'prompt-reference' && <div style={{ padding: 16, marginBottom: 20, background: '#f7f9fd', border: '1px solid #dce4ef', borderRadius: 10 }}>
+          <label style={{ display: 'block', color: '#334155', fontSize: 13, fontWeight: 700 }}>Creation workflow
+            <select value={workflowMode} disabled={busy} onChange={(event) => { const mode = event.target.value as 'GUIDED' | 'LEGACY_AUTOMATIC'; setWorkflowMode(mode); onWorkflowModeChange?.(mode); }} style={{ marginLeft: 12, padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 7, background: '#fff' }}>
+              <option value="GUIDED">Guided · review and edit each stage</option>
+              <option value="LEGACY_AUTOMATIC">Automatic · generate the full video</option>
+            </select>
+          </label>
+          <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: 12.5, lineHeight: 1.55 }}>{workflowMode === 'GUIDED' ? 'Save your product brief and references, then open a persistent workspace for script approval, shot editing, keyframe selection, clips, and timeline export. Saving does not start generation.' : 'The existing automatic workflow queues all generation stages together. You can later open the saved ad from My Ads.'}</p>
+          {adDraft && <a href={`/app/ads/${adDraft.id}?step=script`} style={{ display: 'inline-block', marginTop: 10, color: '#185fa5', fontSize: 12.5 }}>Open saved ad workspace</a>}
+        </div>}
 
         {stepContent[activeStep]}
       </div>

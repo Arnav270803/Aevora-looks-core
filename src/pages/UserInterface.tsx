@@ -15,6 +15,8 @@ import {
 } from '../api/workspaceApi';
 import type { WorkflowStepId, WorkflowTransition } from '../sections/UserInterface/workflow';
 import type { WorkspaceView } from '../sections/UserInterface';
+import GuidedAdWorkspace from '../components/guided/GuidedAdWorkspace';
+import MyAds from '../components/guided/MyAds';
 
 const placeholderCopy: Record<Exclude<WorkspaceView, 'home' | 'create-ad' | 'library' | 'videos' | 'debugging'>, { title: string; copy: string }> = {
   templates: {
@@ -267,9 +269,10 @@ const VideosView = () => {
 
   const allVideos = useMemo(() => {
     return [
-      ...storedVideos.map((video) => ({ ...video, origin: 'stored' as const })),
+      ...storedVideos.map((video) => ({ ...video, adId: null, origin: 'stored' as const })),
       ...generatedVideos.map((video) => ({
         id: video.id,
+        adId: video.adId,
         title: String(video.metadata?.title ?? video.storageKey.split('/').at(-1) ?? 'Generated video'),
         source: video.mimeType?.startsWith('video/') ? video.url ?? '' : '',
         type: 'Generated render',
@@ -306,6 +309,7 @@ const VideosView = () => {
               </div>
               <div style={{ fontSize: 14, color: '#172033', fontWeight: 850, marginBottom: 6 }}>{video.title}</div>
               <div style={{ fontSize: 12.5, color: '#718096', lineHeight: 1.5 }}>{video.detail}</div>
+              {video.adId && <a href={`/app/ads/${video.adId}?step=exports`} style={{ display: 'inline-block', marginTop: 12, color: '#185fa5', fontSize: 13 }}>Open saved ad workspace</a>}
             </div>
           </div>
         ))}
@@ -347,17 +351,26 @@ const DebuggingView = () => (
 );
 
 const UserInterface = () => {
-  const [activeView, setActiveView] = useState<WorkspaceView>('home');
+  const savedAdId = window.location.pathname.match(/^\/app\/ads\/([0-9a-f-]{36})\/?$/i)?.[1];
+  const requestedView = new URLSearchParams(window.location.search).get('view');
+  const initialView: WorkspaceView = savedAdId ? 'create-ad' : ['home', 'create-ad', 'library', 'videos', 'my-ads', 'debugging', 'templates', 'assistant', 'brand-kit'].includes(requestedView ?? '') ? requestedView as WorkspaceView : 'home';
+  const [activeView, setActiveView] = useState<WorkspaceView>(initialView);
   const [activeStep, setActiveStep] = useState<WorkflowStepId>('prompt-reference');
+  const [creationWorkflowMode, setCreationWorkflowMode] = useState<'GUIDED' | 'LEGACY_AUTOMATIC'>('GUIDED');
   const [stepTransition, setStepTransition] = useState<WorkflowTransition>(null);
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
-  const openCreateAd = () => setActiveView('create-ad');
+  const changeView = (view: WorkspaceView) => {
+    if (savedAdId) { window.location.assign(`/app?view=${view}`); return; }
+    const url = new URL(window.location.href); url.searchParams.set('view', view);
+    window.history.replaceState({}, '', url); setActiveView(view);
+  };
+  const openCreateAd = () => changeView('create-ad');
   const refreshDashboard = () => setDashboardRefreshKey((key) => key + 1);
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: "'Inter', -apple-system, sans-serif" }}>
       {/* Sidebar */}
-      <UserHorizontalNavigation activeView={activeView} onViewChange={setActiveView} />
+      <UserHorizontalNavigation activeView={activeView} onViewChange={changeView} />
 
       {/* Main content */}
       <div style={{
@@ -369,21 +382,24 @@ const UserInterface = () => {
         <UIHeroNavbar onCreateAd={openCreateAd} />
         <main style={{ flex: 1 }}>
           {activeView === 'home' && <HomeDashboard onCreateAd={openCreateAd} refreshKey={dashboardRefreshKey} />}
-          {activeView === 'create-ad' && (
+          {activeView === 'create-ad' && savedAdId && <GuidedAdWorkspace adId={savedAdId} />}
+          {activeView === 'create-ad' && !savedAdId && (
             <>
-              <ToolsAvailable activeStep={activeStep} transitionEdge={stepTransition} onStepChange={setActiveStep} />
+              {creationWorkflowMode === 'LEGACY_AUTOMATIC' ? <ToolsAvailable activeStep={activeStep} transitionEdge={stepTransition} onStepChange={setActiveStep} /> : <div style={{ padding: '24px 32px', color: '#52617a', fontSize: 13 }}>Product brief → Script review → Shots & keyframes → Scene clips → Timeline & export</div>}
               <AdCreationSection
                 activeStep={activeStep}
                 onStepChange={setActiveStep}
                 onStepTransitionChange={setStepTransition}
                 onWorkspaceChange={refreshDashboard}
+                onWorkflowModeChange={(mode) => { setCreationWorkflowMode(mode); setActiveStep('prompt-reference'); }}
               />
             </>
           )}
           {activeView === 'library' && <LibraryView onCreateAd={openCreateAd} />}
           {activeView === 'videos' && <VideosView />}
+          {activeView === 'my-ads' && <MyAds />}
           {activeView === 'debugging' && <DebuggingView />}
-          {activeView !== 'home' && activeView !== 'create-ad' && activeView !== 'library' && activeView !== 'videos' && activeView !== 'debugging' && (
+          {activeView !== 'home' && activeView !== 'create-ad' && activeView !== 'library' && activeView !== 'videos' && activeView !== 'debugging' && activeView !== 'my-ads' && (
             <PlaceholderView view={activeView} onCreateAd={openCreateAd} />
           )}
         </main>

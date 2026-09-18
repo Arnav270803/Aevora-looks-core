@@ -99,9 +99,11 @@ const QuickAction = ({
   </button>
 );
 
-const MiniProject = ({ name, status, time, detail }: { name: string; status: string; time: string; detail: string }) => (
+const MiniProject = ({ name, status, time, detail, adId }: { name: string; status: string; time: string; detail: string; adId: string }) => (
   <button
     type="button"
+    onClick={() => window.location.assign(`/app/ads/${adId}?step=script`)}
+    aria-label={`Open ${name}`}
     style={{
       display: 'grid',
       gridTemplateColumns: '48px 1fr auto',
@@ -112,7 +114,7 @@ const MiniProject = ({ name, status, time, detail }: { name: string; status: str
       background: '#ffffff',
       borderRadius: 10,
       padding: 12,
-      cursor: 'default',
+      cursor: 'pointer',
       fontFamily: 'inherit',
       textAlign: 'left',
     }}
@@ -445,6 +447,7 @@ const HomeDashboard = ({ onCreateAd, refreshKey = 0 }: HomeDashboardProps) => {
             {!loading && recentAds.map((ad) => (
               <MiniProject
                 key={ad.id}
+                adId={ad.id}
                 name={ad.title || ad.productName || 'Untitled ad'}
                 status={`${ad.status.toLowerCase()} in ${ad.projectName}`}
                 detail={`${ad._count?.assets ?? 0} assets, ${ad._count?.pipelineJobs ?? 0} jobs`}

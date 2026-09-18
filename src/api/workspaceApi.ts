@@ -21,6 +21,7 @@ export type AdDraft = {
   projectId: string;
   title: string;
   status: AdStatus;
+  workflowMode?: 'LEGACY_AUTOMATIC' | 'GUIDED';
   productName?: string | null;
   brandName?: string | null;
   category?: string | null;
@@ -107,6 +108,8 @@ export type ShotRecord = {
   promptPayload?: Record<string, unknown> | null;
   keyframeAssetId?: string | null;
   videoAssetId?: string | null;
+  keyframeCompatible?: boolean;
+  videoCompatible?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -136,6 +139,7 @@ export type CreateProjectPayload = {
 };
 
 export type SaveAdPayload = {
+  workflowMode?: 'LEGACY_AUTOMATIC' | 'GUIDED';
   title?: string;
   productName?: string;
   brandName?: string;
@@ -241,7 +245,7 @@ export function getPipelineJob(jobId: string) {
   return protectedRequest<{ job: PipelineJob }>(`/pipeline-jobs/${jobId}`).then((response) => response.job);
 }
 
-function protectedRequest<T>(path: string, options: Parameters<typeof apiRequest<T>>[1] = {}) {
+export function protectedRequest<T>(path: string, options: Parameters<typeof apiRequest<T>>[1] = {}) {
   const accessToken = tokenStorage.getAccessToken();
 
   if (!accessToken) {

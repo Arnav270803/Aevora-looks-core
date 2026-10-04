@@ -1,4 +1,5 @@
 import { apiRequest, ApiError } from './client';
+import { refreshSession } from '../auth/authApi';
 import { tokenStorage } from '../auth/tokenStorage';
 
 export type ProjectSummary = {
@@ -245,15 +246,48 @@ export function getPipelineJob(jobId: string) {
   return protectedRequest<{ job: PipelineJob }>(`/pipeline-jobs/${jobId}`).then((response) => response.job);
 }
 
-export function protectedRequest<T>(path: string, options: Parameters<typeof apiRequest<T>>[1] = {}) {
+let refreshInFlight: Promise<string> | null = null;
+
+/** Access tokens expire after 15 minutes, so a long editing session must renew its own. */
+function refreshAccessToken() {
+  // The workspace polls, so simultaneous 401s share one refresh; the backend
+  // rotates refresh tokens and parallel renewals would invalidate each other.
+  refreshInFlight ??= (async () => {
+    const refreshToken = tokenStorage.getRefreshToken();
+
+    if (!refreshToken) {
+      throw new ApiError('Your session has expired. Please log in again.', 401);
+    }
+
+    try {
+      const session = await refreshSession(refreshToken);
+      tokenStorage.setTokens(session);
+      return session.accessToken;
+    } catch {
+      tokenStorage.clear();
+      throw new ApiError('Your session has expired. Please log in again.', 401);
+    }
+  })().finally(() => {
+    refreshInFlight = null;
+  });
+
+  return refreshInFlight;
+}
+
+export async function protectedRequest<T>(path: string, options: Parameters<typeof apiRequest<T>>[1] = {}) {
   const accessToken = tokenStorage.getAccessToken();
 
   if (!accessToken) {
     throw new ApiError('Please log in to continue.', 401);
   }
 
-  return apiRequest<T>(path, {
-    ...options,
-    accessToken,
-  });
+  try {
+    return await apiRequest<T>(path, { ...options, accessToken });
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.status !== 401) {
+      throw error;
+    }
+
+    return await apiRequest<T>(path, { ...options, accessToken: await refreshAccessToken() });
+  }
 }

@@ -7,6 +7,7 @@ import {
   createProject,
   getAd,
   listProjects,
+  MAX_UPLOAD_BYTES,
   uploadAsset,
   updateAd,
   type AdDraft,
@@ -41,8 +42,6 @@ type DraftForm = {
 };
 
 type SaveState = 'idle' | 'saving' | 'registering-assets' | 'queueing' | 'downloading';
-
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const defaultForm: DraftForm = {
   productName: '',
@@ -228,7 +227,7 @@ const MiniUpload = ({
       </div>
     </div>
     <div style={{ fontSize: 11.5, color: '#a1adbd' }}>
-      {files.length > 0 ? `${files.length} local file${files.length === 1 ? '' : 's'} selected` : 'JPG, PNG, or WebP up to 5MB each'}
+      {files.length > 0 ? `${files.length} local file${files.length === 1 ? '' : 's'} selected` : 'JPG, PNG, or WebP up to 4MB each'}
     </div>
   </label>
 );
@@ -861,7 +860,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
       return;
     }
 
-    const supportedFiles = nextFiles.filter((file) => supportedImageMimeType(file) && file.size <= MAX_IMAGE_BYTES);
+    const supportedFiles = nextFiles.filter((file) => supportedImageMimeType(file) && file.size <= MAX_UPLOAD_BYTES);
     const rejectedCount = nextFiles.length - supportedFiles.length;
 
     setFiles((currentFiles) => {
@@ -869,7 +868,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
       const additions = supportedFiles.filter((file) => !existing.has(fileKey(file)));
       return [...currentFiles, ...additions];
     });
-    setError(rejectedCount > 0 ? `${rejectedCount} image${rejectedCount === 1 ? '' : 's'} skipped. Use JPG, PNG, or WebP files no larger than 5MB.` : null);
+    setError(rejectedCount > 0 ? `${rejectedCount} image${rejectedCount === 1 ? '' : 's'} skipped. Use JPG, PNG, or WebP files no larger than 4MB.` : null);
     setSuccess(null);
   };
 
@@ -1032,7 +1031,7 @@ const AdCreationSection = ({ activeStep, onStepChange, onStepTransitionChange, o
       ));
 
     if (!hasImage) {
-      setError('Upload at least one product image (JPG, PNG, or WebP up to 5MB) before generating. Video generation needs a product image as its first frame.');
+      setError('Upload at least one product image (JPG, PNG, or WebP up to 4MB) before generating. Video generation needs a product image as its first frame.');
       setSuccess(null);
       return;
     }

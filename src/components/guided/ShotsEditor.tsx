@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { currentRevision, findArtifact, guidedApi, orderedShots } from '../../api/guidedWorkspaceApi';
 import type { GuidedWorkspace, Operation, ScriptContent, ShotContent } from '../../api/guidedWorkspaceApi';
+import { MAX_UPLOAD_BYTES } from '../../api/workspaceApi';
 import type { AssetRecord, ShotRecord } from '../../api/workspaceApi';
 import { getApiErrorMessage } from '../../api/client';
 import { EditorControls, Field } from './EditorControls';
@@ -115,7 +116,7 @@ function MediaCandidates({ workspace, shot, revisionId, kind, disabled, accept }
   };
   const upload = async (file?: File) => {
     if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) { setError('Choose a JPG, PNG, or WebP image no larger than 5MB.'); return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > MAX_UPLOAD_BYTES) { setError('Choose a JPG, PNG, or WebP image no larger than 4MB.'); return; }
     setBusy(true); setError(null);
     try {
       await guidedApi.upload(workspace.ad.id, file, { source: 'guided-workspace', manualUpload: true, shotId: shot.id, generatedRole: 'KEYFRAME' });

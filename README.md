@@ -32,3 +32,7 @@ http://localhost:5173/login
 - The backend verifies Google, creates/updates the local user, and returns Aevora JWTs.
 - The frontend stores the access and refresh tokens in local storage for MVP testing.
 - `/app` is protected and redirects to `/login?next=/app` when there is no valid session.
+
+## Deploying
+
+AWS Amplify Hosting builds this app from `amplify.yml`. Set `VITE_API_BASE_URL` (the API's Lambda Function URL) and `VITE_GOOGLE_CLIENT_ID` as Amplify environment variables, and add a `/<*>` → `/index.html` (404-200) rewrite so app routes work on refresh. The full AWS setup is in the backend repo's `docs/deploy-aws-serverless.md`.

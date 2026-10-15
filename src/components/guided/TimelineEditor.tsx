@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { currentRevision, findArtifact, guidedApi, mediaDuration, orderedShots } from '../../api/guidedWorkspaceApi';
 import type { AudioTrack, GuidedWorkspace, Operation, ScriptContent, ShotContent, TimelineClip, TimelineContent } from '../../api/guidedWorkspaceApi';
 import { getApiErrorMessage } from '../../api/client';
+import { MAX_UPLOAD_BYTES } from '../../api/workspaceApi';
 import { EditorControls, Field } from './EditorControls';
 import { useRevisionEditor } from './useRevisionEditor';
 import TimelinePreview from './TimelinePreview';
@@ -58,7 +59,7 @@ export default function TimelineEditor({ workspace, accept, run, busy }: {
   };
   const uploadAudio = async (file?: File) => {
     if (!file) return;
-    if (!['audio/mpeg', 'audio/wav', 'audio/ogg'].includes(file.type) || file.size > 5 * 1024 * 1024) { setError('Use an MP3, WAV, or OGG audio file up to 5MB.'); return; }
+    if (!['audio/mpeg', 'audio/wav', 'audio/ogg'].includes(file.type) || file.size > MAX_UPLOAD_BYTES) { setError('Use an MP3, WAV, or OGG audio file up to 4MB.'); return; }
     setUploading(true); setError(null);
     try {
       const durationSeconds = await inspectAudio(file);
@@ -102,7 +103,7 @@ export default function TimelineEditor({ workspace, accept, run, busy }: {
       </div>)}
     </div>
     <div className="gw-block"><h3>Audio tracks</h3><p className="gw-note">Add recorded voiceover or music. Uploaded audio is mixed with unmuted clip audio. Volume is 0–2; browser preview caps each source at 1, while export applies the requested gain.</p>
-      <Field label="Upload MP3, WAV, or OGG (up to 5MB)"><input type="file" accept="audio/mpeg,audio/wav,audio/ogg" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; void uploadAudio(file); }} /></Field>
+      <Field label="Upload MP3, WAV, or OGG (up to 4MB)"><input type="file" accept="audio/mpeg,audio/wav,audio/ogg" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; void uploadAudio(file); }} /></Field>
       <div className="gw-toolbar"><select aria-label="Audio asset to add" value={addAudioId} onChange={(event) => setAddAudioId(event.target.value)}><option value="">Choose uploaded audio</option>{audioAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.fileName}</option>)}</select><button type="button" disabled={!addAudioId || uploading || !durationFrames} onClick={addAudio}>Add audio track</button></div>
       {timeline.audioTracks.map((track) => <div className="gw-beat" key={track.id}><div className="gw-section-heading"><strong>{workspace.assets.find((asset) => asset.id === track.assetId)?.fileName ?? 'Missing audio asset'}</strong><button type="button" className="danger" onClick={() => editor.setDraft((value) => ({ ...value, audioTracks: value.audioTracks.filter((item) => item.id !== track.id) }))}>Remove track</button></div>
         <div className="gw-grid three">{(['startFrame', 'sourceInFrame', 'durationFrames', 'fadeInFrames', 'fadeOutFrames'] as const).map((field) => <Field key={field} label={{ startFrame: 'Timeline start (frames)', sourceInFrame: 'Source in (frames)', durationFrames: 'Duration (frames)', fadeInFrames: 'Fade in (frames)', fadeOutFrames: 'Fade out (frames)' }[field]}><input type="number" min={0} step={1} value={track[field]} onChange={(event) => patchAudio(track.id, { [field]: event.target.valueAsNumber })} /></Field>)}<Field label="Volume"><input type="number" min={0} max={2} step={0.05} value={track.volume} onChange={(event) => patchAudio(track.id, { volume: event.target.valueAsNumber })} /></Field></div>

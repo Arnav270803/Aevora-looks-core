@@ -2,6 +2,9 @@ import { apiRequest, ApiError } from './client';
 import { refreshSession } from '../auth/authApi';
 import { tokenStorage } from '../auth/tokenStorage';
 
+// Must match the backend: uploads travel as base64 JSON, and AWS Lambda accepts at most 6MB per request.
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+
 export type ProjectSummary = {
   id: string;
   name: string;

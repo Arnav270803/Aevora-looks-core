@@ -37,7 +37,8 @@ const RedirectToLogin = () => {
 };
 
 function App() {
-  const path = window.location.pathname;
+  // Static hosts such as AWS Amplify redirect /login to /login/, so ignore a trailing slash.
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
   const { status, isAuthenticated } = useAuth();
 
   if (path === '/app' || path.startsWith('/app/ads/')) {
